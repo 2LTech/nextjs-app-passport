@@ -22,6 +22,11 @@ echo "[+] Doc..."
 yarn doc >/dev/null 2>&1
 echo "    ok"
 
+# Test
+echo "[+] Test..."
+yarn test >/dev/null 2>&1
+echo "    ok"
+
 # Build
 echo "[+] Build..."
 yarn build >/dev/null 2>&1

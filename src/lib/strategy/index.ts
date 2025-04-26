@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import passport from 'passport'
 import Custom from 'passport-custom'
 
+import { errors } from '@/defs'
+
 // Types
 export type FindUser = (body: any) => Promise<{ user?: any }>
 export type ValidatePassword = (user: any, body: any) => boolean
@@ -25,7 +27,7 @@ export const setLocaLStrategy = (
             if (user && validatePassword(user, res)) {
               done(null, user)
             } else {
-              done(new Error('Invalid username and password combination'))
+              done(new Error(errors.invalidLogin))
             }
           })
           .catch((err: any) => {

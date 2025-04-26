@@ -5,5 +5,9 @@
   },
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "prettier.prettierPath": ".yarn/sdks/prettier/index.cjs"
+  "prettier.prettierPath": ".yarn/sdks/prettier/index.cjs",
+  "sonarlint.connectedMode.project": {
+    "connectionId": "2ltech",
+    "projectKey": "2LTech_nextjs-app-passport"
+  }
 }

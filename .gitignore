@@ -19,5 +19,8 @@ node_modules
 # Docs
 docs
 
+# Coverage
+coverage
+
 # Build
 build
