@@ -4,7 +4,7 @@
   "types": "index.d.ts",
   "main": "build/index.js",
   "scripts": {
-    "depcheck": "depcheck",
+    "depcheck": "depcheck --ignores '@babel/*,@types/*'",
     "prettier": "prettier -l '**/*.{js,jsx,ts,tsx,json,md,css}'",
     "doc": "typedoc",
     "test": "jest --config .config/jest.config.js",
