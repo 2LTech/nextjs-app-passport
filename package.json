@@ -1,0 +1,27 @@
+{
+  "name": "nextjs-app-passport",
+  "version": "0.1.0",
+  "types": "index.d.ts",
+  "main": "build/index.js",
+  "scripts": {
+    "depcheck": "depcheck",
+    "prettier": "prettier -l '**/*.{js,jsx,ts,tsx,json,md,css}'",
+    "doc": "typedoc",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hapi/iron": "7.0.1",
+    "passport": "0.7.0",
+    "passport-custom": "1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.2",
+    "@types/passport": "1.0.17",
+    "depcheck": "1.4.7",
+    "next": "15.3.1",
+    "prettier": "3.5.3",
+    "typedoc": "0.28.3",
+    "typescript": "5.8.3"
+  },
+  "packageManager": "yarn@4.9.1"
+}

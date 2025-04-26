@@ -1,0 +1,15 @@
+.git
+.github
+.config
+.vscode
+.yarn
+doc
+node_modules
+src
+.editorconfig
+.env
+.gitattributes
+.gitignore
+.prettierrc
+tsconfig.json
+yarn.lock
