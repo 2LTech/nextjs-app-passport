@@ -7,7 +7,8 @@
     "depcheck": "depcheck",
     "prettier": "prettier -l '**/*.{js,jsx,ts,tsx,json,md,css}'",
     "doc": "typedoc",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc && tsc-alias",
+    "check": ".github/workflows/check.local.sh"
   },
   "dependencies": {
     "@hapi/iron": "7.0.1",
@@ -20,6 +21,7 @@
     "depcheck": "1.4.7",
     "next": "15.3.1",
     "prettier": "3.5.3",
+    "tsc-alias": "1.8.15",
     "typedoc": "0.28.3",
     "typescript": "5.8.3"
   },

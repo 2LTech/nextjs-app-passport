@@ -2,8 +2,9 @@ import { NextRequest } from 'next/server'
 import passport from 'passport'
 import Custom from 'passport-custom'
 
+// Types
 export type FindUser = (body: any) => Promise<{ user?: any }>
-export type ValidatePassword = (user: any, password: string) => boolean
+export type ValidatePassword = (user: any, body: any) => boolean
 
 /**
  * Set local strategy
@@ -19,10 +20,9 @@ export const setLocaLStrategy = (
     nextRequest
       .json()
       .then((res) => {
-        const { username, password } = res
-        findUser({ username })
+        findUser(res)
           .then((user: any) => {
-            if (user && validatePassword(user, password)) {
+            if (user && validatePassword(user, res)) {
               done(null, user)
             } else {
               done(new Error('Invalid username and password combination'))

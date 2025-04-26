@@ -1,12 +1,12 @@
-import { removeCookie } from '@/lib/session'
+import { refreshSession } from '@/lib/session'
 
 /**
- * Logout route
+ * Refresh route
  * @returns API Response
  */
-export const GET = async (): Promise<Response> => {
+export const refreshRoute = async (): Promise<Response> => {
   try {
-    await removeCookie()
+    await refreshSession()
 
     return Response.json({ ok: true })
   } catch (err: any) {

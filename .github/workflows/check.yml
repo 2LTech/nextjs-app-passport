@@ -1,0 +1,29 @@
+name: Check
+on: push
+
+jobs:
+  build:
+    name: Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@master
+        with:
+          node-version: '22.x'
+      - name: Install
+        run: yarn install
+      - name: Depcheck
+        run: yarn depcheck
+      - name: Lint
+        run: yarn prettier
+      - name: Doc
+        run: yarn doc
+      - name: Build
+        run: yarn build
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

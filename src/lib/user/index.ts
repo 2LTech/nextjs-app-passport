@@ -56,13 +56,20 @@ export const findUser = async (body: {
 /**
  * Validate password
  * @param user User
- * @param password Password
+ * @param body Body
  * @returns Validation
  * @deprecated WARNING: demo function, do not use it in production
  */
-export const validatePassword = (user: User, password: string): boolean => {
-  const hash = pbkdf2Sync(password, user.salt, 1_000, 64, 'sha512').toString(
-    'hex'
-  )
+export const validatePassword = (
+  user: User,
+  body: { password: string }
+): boolean => {
+  const hash = pbkdf2Sync(
+    body.password,
+    user.salt,
+    1_000,
+    64,
+    'sha512'
+  ).toString('hex')
   return hash === user.hash
 }

@@ -7,7 +7,7 @@ import login from '@/lib/login'
  * @param req API Request
  * @returns API response
  */
-export const POST = async (req: NextRequest): Promise<Response> => {
+export const loginRoute = async (req: NextRequest): Promise<Response> => {
   try {
     await login(req)
 
