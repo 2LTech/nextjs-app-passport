@@ -8,7 +8,7 @@
     "prettier": "prettier -l '**/*.{js,jsx,ts,tsx,json,md,css}'",
     "doc": "typedoc",
     "test": "jest --config .config/jest.config.js",
-    "build": "tsc && tsc-alias",
+    "build": "tsc -p tsconfig.build.json && tsc-alias",
     "check": ".github/workflows/check.local.sh"
   },
   "dependencies": {
