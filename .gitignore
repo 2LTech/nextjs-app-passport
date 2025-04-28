@@ -24,3 +24,6 @@ coverage
 
 # Build
 build
+
+# sonar
+.scannerwork
