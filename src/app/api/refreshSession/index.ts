@@ -1,10 +1,10 @@
 import { refreshSession } from '@/lib/session'
 
 /**
- * Refresh route
+ * Refresh session route
  * @returns API Response
  */
-export const refreshRoute = async (): Promise<Response> => {
+export const refreshSessionRoute = async (): Promise<Response> => {
   try {
     await refreshSession()
 

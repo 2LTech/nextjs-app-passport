@@ -10,9 +10,13 @@ const mockLogout = jest.fn()
 jest.mock('@/app/api/logout', () => ({
   logoutRoute: async () => mockLogout()
 }))
-const mockRefresh = jest.fn()
-jest.mock('@/app/api/refresh', () => ({
-  refreshRoute: async () => mockRefresh()
+const mockRefreshSession = jest.fn()
+jest.mock('@/app/api/refreshSession', () => ({
+  refreshSessionRoute: async () => mockRefreshSession()
+}))
+const mockgetSession = jest.fn()
+jest.mock('@/app/api/getSession', () => ({
+  getSessionRoute: async () => mockgetSession()
 }))
 const mockStrategy = jest.fn()
 jest.mock('@/lib/strategy', () => ({
@@ -31,8 +35,8 @@ describe('@/index', () => {
     await NodeAppPassport.APILogoutRoute()
     expect(mockLogout).toHaveBeenCalledTimes(1)
 
-    await NodeAppPassport.APIRefreshRoute()
-    expect(mockRefresh).toHaveBeenCalledTimes(1)
+    await NodeAppPassport.APIRefreshSessionRoute()
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1)
 
     NodeAppPassport.setLocaLStrategy(findUser, validatePassword)
     expect(mockStrategy).toHaveBeenCalledTimes(1)

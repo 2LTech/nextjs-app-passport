@@ -1,18 +1,18 @@
-import { refreshRoute } from '@/app/api/refresh'
+import { getSessionRoute } from '@/app/api/getSession'
 
-const mockRefreshSession = jest.fn()
+const mockGetSession = jest.fn()
 jest.mock('@/lib/session', () => ({
-  refreshSession: async () => mockRefreshSession()
+  getSession: async () => mockGetSession()
 }))
 
 describe('@/app/api/refresh', () => {
   beforeEach(() => {
-    mockRefreshSession.mockReset()
+    mockGetSession.mockReset()
   })
 
   test('refreshRoute', async () => {
-    const res = await refreshRoute()
-    expect(mockRefreshSession).toHaveBeenCalledTimes(1)
+    const res = await getSessionRoute()
+    expect(mockGetSession).toHaveBeenCalledTimes(1)
 
     const data = await res.json()
     expect(data.ok).toBe(true)
@@ -20,11 +20,11 @@ describe('@/app/api/refresh', () => {
 
   test('error', async () => {
     const error = 'refresh error'
-    mockRefreshSession.mockImplementation(() => {
+    mockGetSession.mockImplementation(() => {
       throw new Error(error)
     })
-    const res = await refreshRoute()
-    expect(mockRefreshSession).toHaveBeenCalledTimes(1)
+    const res = await getSessionRoute()
+    expect(mockGetSession).toHaveBeenCalledTimes(1)
 
     const data = await res.json()
     expect(data.ok).toBe(false)
