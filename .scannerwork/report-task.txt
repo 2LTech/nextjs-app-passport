@@ -1,7 +1,0 @@
-organization=2ltech
-projectKey=2LTech_nextjs-app-passport
-serverUrl=https://sonarcloud.io
-serverVersion=8.0.0.62695
-dashboardUrl=https://sonarcloud.io/dashboard?id=2LTech_nextjs-app-passport
-ceTaskId=AZZ8LPqKLkr7NrPIl0EF
-ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZZ8LPqKLkr7NrPIl0EF
