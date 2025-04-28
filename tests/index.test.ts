@@ -14,9 +14,9 @@ const mockRefreshSession = jest.fn()
 jest.mock('@/app/api/refreshSession', () => ({
   refreshSessionRoute: async () => mockRefreshSession()
 }))
-const mockgetSession = jest.fn()
-jest.mock('@/app/api/getSession', () => ({
-  getSessionRoute: async () => mockgetSession()
+const mockGetSession = jest.fn()
+jest.mock('@/lib/session', () => ({
+  getSession: async () => mockGetSession()
 }))
 const mockStrategy = jest.fn()
 jest.mock('@/lib/strategy', () => ({

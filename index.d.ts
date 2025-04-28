@@ -1,11 +1,13 @@
 import { NextRequest } from 'next/server'
 
-import { FindUser, ValidatePassword } from './src/lib/strategy/index'
+import { Session } from '@/defs/index.d'
+
+import { FindUser, ValidatePassword } from '@/lib/strategy/index'
 
 export declare const APILoginRoute = (req: NextRequest) => Promise<Response>
 export declare const APILogoutRoute = () => Promise<Response>
-export declare const APIGetSessionRoute = () => Promise<Response>
 export declare const APIRefreshSessionRoute = () => Promise<Response>
+export declare const getSession = () => Promise<Session>
 export declare const setLocaLStrategy = (
   findUser: FindUser,
   validatePassword: ValidatePassword
@@ -14,8 +16,8 @@ export declare const setLocaLStrategy = (
 declare const NodeAppPassport = {
   APILoginRoute,
   APILogoutRoute,
-  APIGetSessionRoute,
   APIRefreshSessionRoute,
+  getSession,
   setLocaLStrategy
 }
 
