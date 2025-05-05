@@ -13,7 +13,7 @@ export declare const setLocaLStrategy = async (
   validatePassword: ValidatePassword
 ) => any
 
-declare const NodeAppPassport = {
+declare const NextjsAppPassport = {
   APILoginRoute,
   APILogoutRoute,
   APIRefreshSessionRoute,
@@ -21,4 +21,4 @@ declare const NodeAppPassport = {
   setLocaLStrategy
 }
 
-export default NodeAppPassport
+export default NextjsAppPassport

@@ -14,7 +14,7 @@ export const APIRefreshSessionRoute = refreshSessionRoute
 export const setLocaLStrategy = setLocaLStrategy0
 
 // Default
-const NodeAppPassport = {
+const NextjsAppPassport = {
   APILoginRoute,
   APILogoutRoute,
   APIRefreshSessionRoute,
@@ -22,4 +22,4 @@ const NodeAppPassport = {
   setLocaLStrategy
 }
 
-export default NodeAppPassport
+export default NextjsAppPassport

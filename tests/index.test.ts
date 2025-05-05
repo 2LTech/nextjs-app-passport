@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-import NodeAppPassport from '@/index'
+import NextjsAppPassport from '@/index'
 
 const mockLogin = jest.fn()
 jest.mock('@/app/api/login', () => ({
@@ -29,16 +29,16 @@ describe('@/index', () => {
   const validatePassword = jest.fn()
 
   test('default', async () => {
-    await NodeAppPassport.APILoginRoute(req)
+    await NextjsAppPassport.APILoginRoute(req)
     expect(mockLogin).toHaveBeenCalledTimes(1)
 
-    await NodeAppPassport.APILogoutRoute()
+    await NextjsAppPassport.APILogoutRoute()
     expect(mockLogout).toHaveBeenCalledTimes(1)
 
-    await NodeAppPassport.APIRefreshSessionRoute()
+    await NextjsAppPassport.APIRefreshSessionRoute()
     expect(mockRefreshSession).toHaveBeenCalledTimes(1)
 
-    NodeAppPassport.setLocaLStrategy(findUser, validatePassword)
+    NextjsAppPassport.setLocaLStrategy(findUser, validatePassword)
     expect(mockStrategy).toHaveBeenCalledTimes(1)
   })
 })
