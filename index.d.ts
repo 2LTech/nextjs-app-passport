@@ -11,7 +11,7 @@ export declare const getSession = async () => Session
 export declare const setLocaLStrategy = async (
   findUser: FindUser,
   validatePassword: ValidatePassword
-) => any
+) => undefined
 
 declare const NextjsAppPassport = {
   APILoginRoute,
