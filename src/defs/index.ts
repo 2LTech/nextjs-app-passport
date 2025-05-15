@@ -1,5 +1,11 @@
+// Secure
+export const SECURE_COOKIE =
+  process.env.NODE_ENV === 'production'
+    ? !process.env.NEXTJS_APP_PASSPORT_UNSECURE
+    : false
+
 // Token secret
-export const TOKEN_SECRET = process.env.TOKEN_SECRET!
+export const TOKEN_SECRET = process.env.NEXTJS_APP_PASSPORT_TOKEN!
 
 // Token name
 export const TOKEN_NAME = 'nextjs-app-passport-token'

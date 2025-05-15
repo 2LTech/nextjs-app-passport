@@ -31,8 +31,9 @@ jest.mock('@/defs', () => ({
     refreshFailed: 'refresh error'
   },
   MAX_AGE: 60 * 60 * 8,
+  SECURE_COOKIE: false,
   TOKEN_NAME: 'nextjs-app-passport',
-  TOKEN_SECRET: 'abcdefghijklmnopqrstuvwxyz123456789'
+  NEXTJS_APP_PASSPORT_TOKEN: 'abcdefghijklmnopqrstuvwxyz123456789'
 }))
 
 jest.useFakeTimers().setSystemTime(new Date('1986-11-20'))

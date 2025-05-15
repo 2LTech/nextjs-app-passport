@@ -3,7 +3,13 @@ import { cookies } from 'next/headers'
 import { randomBytes } from 'crypto'
 
 import { Session } from '@/defs/index.d'
-import { errors, MAX_AGE, TOKEN_NAME, TOKEN_SECRET } from '@/defs'
+import {
+  errors,
+  MAX_AGE,
+  TOKEN_NAME,
+  TOKEN_SECRET,
+  SECURE_COOKIE
+} from '@/defs'
 
 /**
  * Set cookie
@@ -15,7 +21,7 @@ export const setCookie = async (token: string) => {
     maxAge: MAX_AGE,
     expires: new Date(Date.now() + MAX_AGE * 1000),
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: SECURE_COOKIE,
     path: '/',
     sameSite: 'lax'
   })
