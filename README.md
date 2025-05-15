@@ -8,6 +8,16 @@
 
 You can see an example in [nextjs-app-passport-demo](https://github.com/2LTech/nextjs-app-passport-demo)
 
+## Environment variables
+
+### `NEXTJS_APP_PASSPORT_TOKEN` (mandatory)
+
+Used to encrypt the cookie, minimum 32 characters length.
+
+### `NEXTJS_APP_PASSPORT_UNSECURE` (optional)
+
+If defined, allow usage of cookie over HTTP connexion.
+
 ## `setLocalStrategy`
 
 You have to define your own `findUser` and `validatePassword` function to set passport strategy.
