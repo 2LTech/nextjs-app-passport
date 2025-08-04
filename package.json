@@ -1,6 +1,6 @@
 {
   "name": "@2ltech/nextjs-app-passport",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "types": "index.d.ts",
   "main": "build/index.js",
   "scripts": {
@@ -29,11 +29,11 @@
     "@types/passport": "1.0.17",
     "depcheck": "1.4.7",
     "jest": "30.0.5",
-    "next": "15.4.4",
+    "next": "15.4.5",
     "prettier": "3.6.2",
     "tsc-alias": "1.8.16",
-    "typedoc": "0.28.8",
-    "typescript": "5.8.3"
+    "typedoc": "0.28.9",
+    "typescript": "5.9.2"
   },
   "packageManager": "yarn@4.9.2"
 }
