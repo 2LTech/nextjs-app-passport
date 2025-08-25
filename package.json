@@ -1,6 +1,6 @@
 {
   "name": "@2ltech/nextjs-app-passport",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "types": "index.d.ts",
   "main": "build/index.js",
   "scripts": {
