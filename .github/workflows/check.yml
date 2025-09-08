@@ -9,11 +9,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@main
+      - name: Corepack
+        run: corepack enable
       - uses: actions/setup-node@master
         with:
           node-version: '22.x'
-      - name: Corepack
-        run: corepack enable
       - name: Install
         run: yarn install
       - name: Depcheck
