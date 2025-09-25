@@ -1,6 +1,6 @@
 {
   "name": "@2ltech/nextjs-app-passport",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "types": "index.d.ts",
   "main": "build/index.js",
   "scripts": {
@@ -21,19 +21,19 @@
     "@babel/core": "7.28.4",
     "@babel/preset-env": "7.28.3",
     "@babel/preset-typescript": "7.27.1",
-    "@sonar/scan": "4.3.0",
+    "@sonar/scan": "4.3.1",
     "@types/babel__core": "7.20.5",
     "@types/babel__preset-env": "7.10.0",
     "@types/jest": "30.0.0",
-    "@types/node": "24.4.0",
+    "@types/node": "24.5.2",
     "@types/passport": "1.0.17",
     "depcheck": "1.4.7",
     "jest": "30.1.3",
-    "next": "15.5.3",
+    "next": "15.5.4",
     "prettier": "3.6.2",
     "tsc-alias": "1.8.16",
     "typedoc": "0.28.13",
     "typescript": "5.9.2"
   },
-  "packageManager": "yarn@4.9.4"
+  "packageManager": "yarn@4.10.3"
 }
