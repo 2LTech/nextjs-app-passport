@@ -16,16 +16,15 @@ jobs:
       - uses: actions/checkout@main
       - name: Corepack
         run: corepack enable
-      - uses: actions/setup-node@master
+      - uses: actions/setup-node@main
         with:
           node-version: '22.x'
       - name: Install
         run: yarn install
       - name: Build
         run: yarn build
-      - uses: actions/setup-node@master
+      - uses: actions/setup-node@main
         with:
-          always-auth: true
           registry-url: 'https://npm.pkg.github.com'
           scope: '@2ltech'
       - name: Publish Github
@@ -34,11 +33,13 @@ jobs:
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           YARN_NPM_PUBLISH_REGISTRY: 'https://npm.pkg.github.com'
-      - uses: actions/setup-node@master
+      - uses: actions/setup-node@main
         with:
           registry-url: 'https://registry.npmjs.org'
           scope: '@2ltech'
+      - name: Update npm to latest version for OIDC support
+        run: |
+          npm install -g npm@11.10.0 --ignore-scripts
+          npm install -g npm@latest --ignore-scripts
       - name: Publish NPM
-        run: yarn npm publish --access=public
-        env:
-          YARN_NPM_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+        run: npm publish --provenance --access public
