@@ -1,10 +1,10 @@
 {
   "name": "@2ltech/nextjs-app-passport",
-  "version": "1.1.18",
+  "version": "1.1.19",
   "types": "index.d.ts",
   "main": "./build/index.js",
   "exports": "./build/index.js",
-  "files": ["build"],
+  "files": ["build", "index.d.ts"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/2LTech/nextjs-app-passport.git"
