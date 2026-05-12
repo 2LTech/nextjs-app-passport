@@ -6,6 +6,6 @@
 
 - Add unsecure environment variable `NEXTJS_APP_PASSPORT_UNSECURE`
 
-# v1.1.*
+# v1.1.\*
 
-- Update
+- Minor Updates
