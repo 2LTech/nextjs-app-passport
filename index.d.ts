@@ -1,7 +1,12 @@
 import { NextRequest } from 'next/server'
 
-import { Session } from '@/defs'
-import { FindUser, ValidatePassword } from '@/lib/strategy/index'
+export type FindUser = (body: any) => Promise<{ user?: any }>
+export type ValidatePassword = (user: any, body: any) => boolean
+
+export interface Session {
+  id: string
+  [key: string]: any
+}
 
 export declare const APILoginRoute = async (req: NextRequest) =>
   Response['json']()
