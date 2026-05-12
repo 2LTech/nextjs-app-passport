@@ -1,7 +1,6 @@
 {
   "name": "@2ltech/nextjs-app-passport",
   "version": "1.1.17",
-  "private": true,
   "types": "index.d.ts",
   "main": "./build/index.js",
   "exports": "./build/index.js",
