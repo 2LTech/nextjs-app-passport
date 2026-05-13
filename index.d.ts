@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-export type FindUser = (body: any) => Promise<{ user?: any }>
+export type FindUser = (body: any) => Promise<any>
 export type ValidatePassword = (user: any, body: any) => boolean
 
 export interface Session {

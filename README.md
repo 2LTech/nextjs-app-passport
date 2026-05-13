@@ -26,8 +26,8 @@ Type:
 
 ```typescript
 type setLocaLStrategy = async (
-  findUser: FindUser,
-  validatePassword: ValidatePassword
+  findUser: (body: any) => Promise<any>,
+  validatePassword: (user: any, body: any) => boolean
 ) => void
 ```
 
@@ -44,7 +44,7 @@ Typically used in the API login route to initialize passport.
 Type:
 
 ```typescript
-type FindUser = (body: any) => Promise<{ user?: any }>
+type FindUser = (body: any) => Promise<any>
 ```
 
 This function should find an user from request body content (see `APILoginRoute`) and return it, or nothing if no user is found.
@@ -108,7 +108,10 @@ export const GET = APIRefreshSessionRoute
 Type:
 
 ```typescript
-type getSession = async () => Session
+type getSession = async () => {
+  id: string
+  [key: string]: any
+}
 ```
 
 Usage in `app/api/[getSessionRouteName]/route.[js|ts]`:

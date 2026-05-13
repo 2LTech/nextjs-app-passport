@@ -5,7 +5,7 @@ import Custom from 'passport-custom'
 import { errors } from '@/defs'
 
 // Types
-export type FindUser = (body: any) => Promise<{ user?: any }>
+export type FindUser = (body: any) => Promise<any>
 export type ValidatePassword = (user: any, body: any) => boolean
 
 /**
