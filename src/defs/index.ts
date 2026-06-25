@@ -5,7 +5,21 @@ export const SECURE_COOKIE =
     : false
 
 // Token secret
-export const TOKEN_SECRET = process.env.NEXTJS_APP_PASSPORT_TOKEN!
+// Minimum secret length (characters). @hapi/iron's default algorithm
+// (aes-256-cbc) requires a 256-bit / 32-character password, so a shorter
+// secret only fails later, per request, from deep inside Iron.
+export const TOKEN_SECRET_MIN_LENGTH = 32
+
+// Validate the secret at module load so a missing or too-short
+// NEXTJS_APP_PASSPORT_TOKEN fails fast with a clear configuration error
+// instead of surfacing as an opaque, swallowed runtime failure.
+const tokenSecret = process.env.NEXTJS_APP_PASSPORT_TOKEN
+if (!tokenSecret || tokenSecret.length < TOKEN_SECRET_MIN_LENGTH) {
+  throw new Error(
+    `NEXTJS_APP_PASSPORT_TOKEN must be set and at least ${TOKEN_SECRET_MIN_LENGTH} characters long`
+  )
+}
+export const TOKEN_SECRET = tokenSecret
 
 // Token name
 export const TOKEN_NAME = 'nextjs-app-passport-token'
