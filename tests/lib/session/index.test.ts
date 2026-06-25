@@ -18,15 +18,21 @@ jest.mock('next/headers', () => ({
   })
 }))
 
+// Both seal and unseal forward their arguments so tests can assert the real
+// call shape (token/secret + the Iron options carrying the explicit ttl).
 const mockSeal = jest.fn()
 const mockUnseal = jest.fn()
 jest.mock('@hapi/iron', () => ({
   defaults: {},
   seal: (...args: any[]) => mockSeal(...args),
-  unseal: async () => mockUnseal()
+  unseal: async (...args: any[]) => mockUnseal(...args)
 }))
 
+const MAX_AGE = 60 * 60 * 8
 const ABSOLUTE_MAX_AGE = 60 * 60 * 24
+const TOKEN_SECRET = 'token-secret'
+// Expected Iron envelope TTL: the per-token sliding window in ms.
+const IRON_TTL = MAX_AGE * 1000
 jest.mock('@/defs', () => ({
   errors: {
     tokenNotFound: 'token empty',
@@ -37,7 +43,7 @@ jest.mock('@/defs', () => ({
   ABSOLUTE_MAX_AGE: 60 * 60 * 24,
   SECURE_COOKIE: false,
   TOKEN_NAME: 'nextjs-app-passport',
-  NEXTJS_APP_PASSPORT_TOKEN: 'abcdefghijklmnopqrstuvwxyz123456789'
+  TOKEN_SECRET: 'token-secret'
 }))
 
 jest.useFakeTimers()
@@ -111,6 +117,14 @@ describe('@/lib/session', () => {
     expect(sealed.createdAt).toBe(Date.now())
     expect(sealed.issuedAt).toBe(Date.now())
     expect(sealed.maxAge).toBe(60 * 60 * 8)
+
+    // seal must receive the token secret and an explicit Iron ttl so the
+    // cryptographic envelope enforces a lifetime (Iron.defaults.ttl is 0)
+    expect(mockSeal).toHaveBeenCalledWith(
+      expect.any(Object),
+      TOKEN_SECRET,
+      expect.objectContaining({ ttl: IRON_TTL })
+    )
   })
 
   test('getSession', async () => {
@@ -130,6 +144,13 @@ describe('@/lib/session', () => {
       createdAt: Date.now(),
       maxAge: 60 * 60 * 8
     })
+
+    // unseal must receive the cookie token, the secret and the explicit ttl
+    expect(mockUnseal).toHaveBeenCalledWith(
+      'token',
+      TOKEN_SECRET,
+      expect.objectContaining({ ttl: IRON_TTL })
+    )
 
     // Expired (sliding window elapsed)
     mockUnseal.mockImplementation(() => ({
@@ -160,6 +181,41 @@ describe('@/lib/session', () => {
     await expect(getSession()).rejects.toThrow('expired error')
   })
 
+  test('getSession - missing/NaN createdAt treated as expired', async () => {
+    mockGet.mockImplementation(() => ({ value: 'token' }))
+
+    // createdAt absent
+    mockUnseal.mockImplementation(() => ({ id: 'id', maxAge: 60 * 60 * 8 }))
+    await expect(getSession()).rejects.toThrow('expired error')
+
+    // createdAt non-numeric
+    mockUnseal.mockImplementation(() => ({
+      id: 'id',
+      createdAt: 'not-a-date',
+      maxAge: 60 * 60 * 8
+    }))
+    await expect(getSession()).rejects.toThrow('expired error')
+  })
+
+  test('refreshSession - malformed createdAt rejected (shared guard)', async () => {
+    mockGet.mockImplementation(() => ({ value: 'token' }))
+
+    // getSession and refreshSession share readValidSession(), so the same
+    // malformed-payload guard must block a refresh too.
+    mockUnseal.mockImplementation(() => ({ id: 'id', maxAge: 60 * 60 * 8 }))
+    await expect(refreshSession()).rejects.toThrow('expired error')
+
+    mockUnseal.mockImplementation(() => ({
+      id: 'id',
+      createdAt: 'not-a-date',
+      maxAge: 60 * 60 * 8
+    }))
+    await expect(refreshSession()).rejects.toThrow('expired error')
+
+    expect(mockSeal).not.toHaveBeenCalled()
+    expect(mockSet).not.toHaveBeenCalled()
+  })
+
   test('refreshSession', async () => {
     // Empty
     try {
@@ -185,6 +241,19 @@ describe('@/lib/session', () => {
         path: '/',
         sameSite: 'lax'
       }
+    )
+
+    // Both the read (unseal) and the re-issue (seal) carry the secret and the
+    // explicit Iron ttl
+    expect(mockUnseal).toHaveBeenCalledWith(
+      'token',
+      TOKEN_SECRET,
+      expect.objectContaining({ ttl: IRON_TTL })
+    )
+    expect(mockSeal).toHaveBeenCalledWith(
+      expect.any(Object),
+      TOKEN_SECRET,
+      expect.objectContaining({ ttl: IRON_TTL })
     )
 
     // Error: decryption failures now propagate the raw Iron error (aligned
