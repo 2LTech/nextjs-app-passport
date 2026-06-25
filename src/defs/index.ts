@@ -13,7 +13,7 @@ export const TOKEN_NAME = 'nextjs-app-passport-token'
 // Cookie max age
 export const MAX_AGE = 60 * 60 * 8 // 8 hours
 
-// Erorrs
+// Errors
 export const errors = {
   tokenNotFound: 'Token not found',
   sessionExpired: 'Session expired',

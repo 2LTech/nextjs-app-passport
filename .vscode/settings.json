@@ -9,5 +9,10 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "2ltech",
     "projectKey": "2LTech_nextjs-app-passport"
-  }
+  },
+  "spellright.language": [],
+  "spellright.documentTypes": [
+    "latex",
+    "plaintext"
+  ]
 }

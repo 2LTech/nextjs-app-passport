@@ -1,4 +1,4 @@
-import { setLocaLStrategy } from '@/lib/strategy'
+import { setLocalStrategy } from '@/lib/strategy'
 import { NextRequest } from 'next/server'
 import passport from 'passport'
 
@@ -46,7 +46,7 @@ describe('@/lib/strategy', () => {
   })
 
   test('success', async () => {
-    setLocaLStrategy(findUser, validatePassword)
+    setLocalStrategy(findUser, validatePassword)
     const user = await authenticate(req)
     expect(mockFindUser).toHaveBeenCalledTimes(1)
     expect(mockFindUser).toHaveBeenCalledWith({

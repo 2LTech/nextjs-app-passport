@@ -20,7 +20,7 @@ jest.mock('@/lib/session', () => ({
 }))
 const mockStrategy = jest.fn()
 jest.mock('@/lib/strategy', () => ({
-  setLocaLStrategy: () => mockStrategy()
+  setLocalStrategy: () => mockStrategy()
 }))
 
 describe('@/index', () => {
@@ -38,7 +38,7 @@ describe('@/index', () => {
     await NextjsAppPassport.APIRefreshSessionRoute()
     expect(mockRefreshSession).toHaveBeenCalledTimes(1)
 
-    NextjsAppPassport.setLocaLStrategy(findUser, validatePassword)
+    NextjsAppPassport.setLocalStrategy(findUser, validatePassword)
     expect(mockStrategy).toHaveBeenCalledTimes(1)
   })
 })

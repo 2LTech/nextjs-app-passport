@@ -16,7 +16,7 @@ Used to encrypt the cookie, minimum 32 characters length.
 
 ### `NEXTJS_APP_PASSPORT_UNSECURE` (optional)
 
-If defined, allow usage of cookie over HTTP connexion.
+If defined, allow usage of cookie over HTTP connection.
 
 ## `setLocalStrategy`
 
@@ -25,7 +25,7 @@ You have to define your own `findUser` and `validatePassword` function to set pa
 Type:
 
 ```typescript
-type setLocaLStrategy = async (
+type setLocalStrategy = async (
   findUser: (body: any) => Promise<any>,
   validatePassword: (user: any, body: any) => boolean
 ) => void
@@ -34,7 +34,7 @@ type setLocaLStrategy = async (
 Usage:
 
 ```typescript
-setLocaLStrategy(findUser, validatePassword)
+setLocalStrategy(findUser, validatePassword)
 ```
 
 Typically used in the API login route to initialize passport.
@@ -49,7 +49,7 @@ type FindUser = (body: any) => Promise<any>
 
 This function should find an user from request body content (see `APILoginRoute`) and return it, or nothing if no user is found.
 
-### `validatePassord`
+### `validatePassword`
 
 Type:
 
@@ -120,7 +120,7 @@ Usage in `app/api/[getSessionRouteName]/route.[js|ts]`:
 export const GET = async () => {
   try {
     const session = await getSession()
-    // Be carfeul! The entire user object is returned
+    // Be careful! The entire user object is returned
     // Filter session to not send hash, salt, ...
     return Response.json({
       ok: true,

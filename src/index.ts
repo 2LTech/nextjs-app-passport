@@ -3,7 +3,7 @@ import { logoutRoute } from '@/app/api/logout'
 import { refreshSessionRoute } from '@/app/api/refreshSession'
 
 import { getSession as getSession0 } from '@/lib/session'
-import { setLocaLStrategy as setLocaLStrategy0 } from '@/lib/strategy'
+import { setLocalStrategy as setLocalStrategy0 } from '@/lib/strategy'
 
 // API routes
 export const APILoginRoute = loginRoute
@@ -14,7 +14,9 @@ export const APIRefreshSessionRoute = refreshSessionRoute
 export const getSession = getSession0
 
 // Strategy
-export const setLocaLStrategy = setLocaLStrategy0
+export const setLocalStrategy = setLocalStrategy0
+//@deprecated use setLocalStrategy instead
+export const setLocaLStrategy = setLocalStrategy0
 
 // Default
 const NextjsAppPassport = {
@@ -22,6 +24,7 @@ const NextjsAppPassport = {
   APILogoutRoute,
   APIRefreshSessionRoute,
   getSession,
+  setLocalStrategy,
   setLocaLStrategy
 }
 

@@ -13,7 +13,7 @@ export type ValidatePassword = (user: any, body: any) => boolean
  * @param findUser findUser function
  * @param validatePassword validatePassword function
  */
-export const setLocaLStrategy = (
+export const setLocalStrategy = (
   findUser: FindUser,
   validatePassword: ValidatePassword
 ) => {

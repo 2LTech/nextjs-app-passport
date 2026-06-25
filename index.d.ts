@@ -8,22 +8,23 @@ export interface Session {
   [key: string]: any
 }
 
-export declare const APILoginRoute = async (req: NextRequest) =>
-  Response['json']()
-export declare const APILogoutRoute = async () => Response['json']()
-export declare const APIRefreshSessionRoute = async () => Response['json']()
-export declare const getSession = async () => Session
-export declare const setLocaLStrategy = async (
+export declare const APILoginRoute: (req: NextRequest) => Promise<Response>
+export declare const APILogoutRoute: () => Promise<Response>
+export declare const APIRefreshSessionRoute: () => Promise<Response>
+export declare const getSession: () => Promise<Session>
+export declare const setLocalStrategy: (
   findUser: FindUser,
   validatePassword: ValidatePassword
-) => undefined
+) => void
 
-declare const NextjsAppPassport = {
-  APILoginRoute,
-  APILogoutRoute,
-  APIRefreshSessionRoute,
-  getSession,
-  setLocaLStrategy
+declare const NextjsAppPassport: {
+  APILoginRoute: typeof APILoginRoute
+  APILogoutRoute: typeof APILogoutRoute
+  APIRefreshSessionRoute: typeof APIRefreshSessionRoute
+  getSession: typeof getSession
+  setLocalStrategy: typeof setLocalStrategy
+  //@deprecated use setLocalStrategy instead
+  setLocaLStrategy: typeof setLocalStrategy
 }
 
 export default NextjsAppPassport

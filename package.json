@@ -6,11 +6,19 @@
   "exports": {
     ".": {
       "import": {
+        "require": "./build/index.js",
+        "import": "./build/index.js",
         "default": "./build/index.js",
         "types": "./index.d.ts"
       }
     }
   },
+  "files": [
+    "build/",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/2LTech/nextjs-app-passport.git"
@@ -22,7 +30,8 @@
     "test": "jest --config .config/jest.config.js",
     "build": "tsc -p tsconfig.build.json && tsc-alias",
     "check": ".github/workflows/check.local.sh",
-    "sonar": ".github/workflows/sonar.local.sh"
+    "sonar": ".github/workflows/sonar.local.sh",
+    "prepack": "yarn build"
   },
   "dependencies": {
     "@hapi/iron": "7.0.1",
