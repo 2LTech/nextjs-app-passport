@@ -5,6 +5,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    "rootDir": "./src",
     "outDir": "./build",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
