@@ -101,7 +101,7 @@ export const refreshSession = async () => {
     const newToken = await Iron.seal(newSession, TOKEN_SECRET, Iron.defaults)
 
     // Set the new session cookie
-    setCookie(newToken)
+    await setCookie(newToken)
   } catch (err) {
     console.error(errors.refreshFailed, err)
     throw new Error(errors.refreshFailed)
