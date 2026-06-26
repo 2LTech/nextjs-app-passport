@@ -1,6 +1,6 @@
 import Iron from '@hapi/iron'
 import { cookies } from 'next/headers'
-import { randomBytes } from 'crypto'
+import { randomBytes } from 'node:crypto'
 
 import { Session } from '@/defs/index.d'
 import {
