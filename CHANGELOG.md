@@ -9,3 +9,9 @@
 # v1.1.\*
 
 - Minor Updates
+
+# v2.0.0
+
+:warn: BREAKING CHANGES
+
+- removed `APILoginRoute`and `setLocalStrategy`, use `APICreateLoginRoute`instead

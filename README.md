@@ -18,27 +18,6 @@ Used to encrypt the cookie, minimum 32 characters length.
 
 If defined, allow usage of cookie over HTTP connection.
 
-## `setLocalStrategy`
-
-You have to define your own `findUser` and `validatePassword` function to set passport strategy.
-
-Type:
-
-```typescript
-type setLocalStrategy = async (
-  findUser: (body: any) => Promise<any>,
-  validatePassword: (user: any, body: any) => boolean
-) => void
-```
-
-Usage:
-
-```typescript
-setLocalStrategy(findUser, validatePassword)
-```
-
-Typically used in the API login route to initialize passport.
-
 ### `findUser`
 
 Type:
@@ -59,21 +38,24 @@ type ValidatePassword = (user: any, body: any) => boolean
 
 This function should validate the password using the user data (for example hash, salt, ...).
 
-## `APILoginRoute`
+## `APICreateLoginRoute`
+
+It returns a login route handler bound to your `findUser`/`validatePassword`. Each request builds an isolated per-request passport instance, so registration is intrinsic to the route.
 
 Type:
 
 ```typescript
-type APILoginRoute = async (req: NextRequest) => Response
+type APICreateLoginRoute = (
+  findUser: (body: any) => Promise<any>,
+  validatePassword: (user: any, body: any) => boolean
+) => (req: NextRequest) => Promise<Response>
 ```
 
 Usage in `app/api/[loginRouteName]/route.[js|ts]`:
 
 ```typescript
-export const POST = APILoginRoute
+export const POST = APICreateLoginRoute(findUser, validatePassword)
 ```
-
-> `APILoginRoute` get the body content directly from your fetch request in the client side.
 
 ## `APILogoutRoute`
 

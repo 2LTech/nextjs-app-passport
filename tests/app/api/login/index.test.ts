@@ -1,13 +1,20 @@
 import { NextRequest } from 'next/server'
 
-import { loginRoute } from '@/app/api/login'
+import { createLoginRoute } from '@/app/api/login'
 
 import { errors } from '@/defs'
 
 import { internalErrorMessage } from '@/lib/api/response'
+import { FindUser, ValidatePassword } from '@/lib/strategy'
 
-const mockLogin = jest.fn()
-jest.mock('@/lib/login', () => async () => mockLogin())
+const mockCreateLogin = jest.fn()
+jest.mock(
+  '@/lib/login',
+  () =>
+    (...args: any) =>
+    async (req: NextRequest) =>
+      mockCreateLogin(...args, req)
+)
 
 const mockGuard = jest.fn()
 jest.mock('@/lib/api/security', () => ({
@@ -16,11 +23,14 @@ jest.mock('@/lib/api/security', () => ({
 
 describe('@/app/api/login', () => {
   const req = {} as NextRequest
+  const findUser = jest.fn() as FindUser
+  const validatePassword = jest.fn() as ValidatePassword
   let consoleError: jest.SpyInstance
 
   beforeEach(() => {
-    mockLogin.mockReset()
+    mockCreateLogin.mockReset()
     mockGuard.mockReset()
+    mockGuard.mockImplementation(() => undefined)
 
     consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
   })
@@ -29,10 +39,9 @@ describe('@/app/api/login', () => {
     consoleError.mockRestore()
   })
 
-  test('loginRoute', async () => {
-    const res = await loginRoute(req)
-    expect(res.status).toBe(200)
-    expect(mockLogin).toHaveBeenCalledTimes(1)
+  test('createLoginRoute', async () => {
+    const res = await createLoginRoute(findUser, validatePassword)(req)
+    expect(mockCreateLogin).toHaveBeenCalledTimes(1)
 
     const data = await res.json()
     expect(data.ok).toBe(true)
@@ -42,7 +51,7 @@ describe('@/app/api/login', () => {
     mockGuard.mockImplementation(() =>
       Response.json({ ok: false }, { status: 403 })
     )
-    const res = await loginRoute(req)
+    const res = await createLoginRoute(findUser, validatePassword)(req)
     expect(res.status).toBe(403)
 
     const data = await res.json()
@@ -50,12 +59,12 @@ describe('@/app/api/login', () => {
   })
 
   test('invalid authentication, 401', async () => {
-    mockLogin.mockImplementation(() => {
+    mockCreateLogin.mockImplementation(() => {
       throw new Error(errors.invalidAuthentication)
     })
-    const res = await loginRoute(req)
+    const res = await createLoginRoute(findUser, validatePassword)(req)
     expect(res.status).toBe(401)
-    expect(mockLogin).toHaveBeenCalledTimes(1)
+    expect(mockCreateLogin).toHaveBeenCalledTimes(1)
 
     const data = await res.json()
     expect(data.ok).toBe(false)
@@ -64,12 +73,12 @@ describe('@/app/api/login', () => {
 
   test('unknown internal error, 500', async () => {
     const rawMessage = 'some internal server error'
-    mockLogin.mockImplementation(() => {
+    mockCreateLogin.mockImplementation(() => {
       throw new Error(rawMessage)
     })
-    const res = await loginRoute(req)
+    const res = await createLoginRoute(findUser, validatePassword)(req)
     expect(res.status).toBe(500)
-    expect(mockLogin).toHaveBeenCalledTimes(1)
+    expect(mockCreateLogin).toHaveBeenCalledTimes(1)
 
     const data = await res.json()
     expect(data.ok).toBe(false)

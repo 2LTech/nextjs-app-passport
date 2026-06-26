@@ -1,23 +1,29 @@
 import { NextRequest } from 'next/server'
 
-import login from '@/lib/login'
+import createLogin from '@/lib/login'
 import { guard } from '@/lib/api/security'
 import { errorResponse } from '@/lib/api/response'
+import { FindUser, ValidatePassword } from '@/lib/strategy'
 
 /**
- * Login route
- * @param request API Request
- * @returns API response
+ * Create login route
+ *
+ * Mount as `export const POST = createLoginRoute(findUser, validatePassword)`.
+ * @param findUser findUser function
+ * @param validatePassword validatePassord Function
+ * @returns
  */
-export const loginRoute = async (request: NextRequest): Promise<Response> => {
-  try {
-    const rejection = guard(request)
-    if (rejection) return rejection
+export const createLoginRoute =
+  (findUser: FindUser, validatePassword: ValidatePassword) =>
+  async (request: NextRequest): Promise<Response> => {
+    try {
+      const rejection = guard(request)
+      if (rejection) return rejection
 
-    await login(request)
+      await createLogin(findUser, validatePassword)(request)
 
-    return Response.json({ ok: true })
-  } catch (err) {
-    return errorResponse(err)
+      return Response.json({ ok: true })
+    } catch (err) {
+      return errorResponse(err)
+    }
   }
-}

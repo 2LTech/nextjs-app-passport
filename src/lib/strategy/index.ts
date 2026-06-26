@@ -8,16 +8,18 @@ import { errors } from '@/defs'
 export type FindUser = (body: any) => Promise<any>
 export type ValidatePassword = (user: any, body: any) => boolean
 
+export const strategyName = 'nextjs-app-passport'
+
 /**
- * Set local strategy
+ * Build custom strategy
  * @param findUser findUser function
  * @param validatePassword validatePassword function
  */
-export const setLocalStrategy = (
+export const buildCustomStrategy = (
   findUser: FindUser,
   validatePassword: ValidatePassword
-) => {
-  const localStrategy = new Custom.Strategy((req, done) => {
+): Custom.Strategy =>
+  new Custom.Strategy((req, done) => {
     const nextRequest = req as unknown as NextRequest
     nextRequest
       .json()
@@ -39,5 +41,13 @@ export const setLocalStrategy = (
       })
   })
 
-  passport.use('next-app-passport', localStrategy)
+/**
+ * Has local strategy
+ * @returns true if local strategy is defined
+ */
+export const hasLocalStrategy = (): boolean => {
+  const registry = passport as unknown as {
+    _strategy?: (name: string) => unknown
+  }
+  return Boolean(registry._strategy?.(strategyName))
 }
