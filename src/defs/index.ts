@@ -29,5 +29,7 @@ export const errors = {
   sessionExpired: 'Session expired',
   refreshFailed: 'Failed to refresh session',
   invalidAuthentication: 'Invalid username or password',
-  invalidLogin: 'Invalid username and password combination'
+  invalidLogin: 'Invalid username and password combination',
+  strategyNotRegistered:
+    'Local passport strategy is not registered. Call setLocalStrategy(findUser, validatePassword) at module load before mounting APILoginRoute, or use createLoginRoute(findUser, validatePassword).'
 }

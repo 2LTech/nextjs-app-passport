@@ -39,6 +39,14 @@ setLocalStrategy(findUser, validatePassword)
 
 Typically used in the API login route to initialize passport.
 
+> :warning: `setLocalStrategy` registers the strategy on the **process-global**
+> passport singleton. The registration can be lost on a serverless cold start or
+> clobbered by another route/tenant registering under the same name, and it must
+> run in the same process **before** `APILoginRoute` handles a request (otherwise
+> login fails fast with a clear setup error). For new code prefer
+> [`createLoginRoute`](#createloginroute), which builds an isolated per-request
+> passport instance and is immune to these hazards.
+
 ### `findUser`
 
 Type:
@@ -74,6 +82,32 @@ export const POST = APILoginRoute
 ```
 
 > `APILoginRoute` get the body content directly from your fetch request in the client side.
+
+## `createLoginRoute`
+
+Recommended alternative to `setLocalStrategy` + `APILoginRoute`. It returns a
+login route handler bound to your `findUser`/`validatePassword`. Each request
+builds an isolated per-request passport instance, so registration is intrinsic
+to the route and the global-singleton hazards described under `setLocalStrategy`
+do not apply (no separate `setLocalStrategy` call is required).
+
+Type:
+
+```typescript
+type createLoginRoute = (
+  findUser: (body: any) => Promise<any>,
+  validatePassword: (user: any, body: any) => boolean
+) => async (req: NextRequest) => Response
+```
+
+Usage in `app/api/[loginRouteName]/route.[js|ts]`:
+
+```typescript
+export const POST = createLoginRoute(findUser, validatePassword)
+```
+
+> Like `APILoginRoute`, the handler gets the body content directly from your
+> fetch request on the client side.
 
 ## `APILogoutRoute`
 

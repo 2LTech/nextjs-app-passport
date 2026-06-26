@@ -1,4 +1,7 @@
-import { loginRoute } from '@/app/api/login'
+import {
+  loginRoute,
+  createLoginRoute as createLoginRoute0
+} from '@/app/api/login'
 import { logoutRoute } from '@/app/api/logout'
 import { refreshSessionRoute } from '@/app/api/refreshSession'
 
@@ -9,6 +12,9 @@ import { setLocalStrategy as setLocalStrategy0 } from '@/lib/strategy'
 export const APILoginRoute = loginRoute
 export const APILogoutRoute = logoutRoute
 export const APIRefreshSessionRoute = refreshSessionRoute
+
+// Login route factory (recommended: per-request Passport instance, no global singleton)
+export const createLoginRoute = createLoginRoute0
 
 // Session
 export const getSession = getSession0
@@ -23,6 +29,7 @@ const NextjsAppPassport = {
   APILoginRoute,
   APILogoutRoute,
   APIRefreshSessionRoute,
+  createLoginRoute,
   getSession,
   setLocalStrategy,
   setLocaLStrategy

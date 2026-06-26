@@ -11,6 +11,10 @@ export interface Session {
 export declare const APILoginRoute: (req: NextRequest) => Promise<Response>
 export declare const APILogoutRoute: () => Promise<Response>
 export declare const APIRefreshSessionRoute: () => Promise<Response>
+export declare const createLoginRoute: (
+  findUser: FindUser,
+  validatePassword: ValidatePassword
+) => (req: NextRequest) => Promise<Response>
 export declare const getSession: () => Promise<Session>
 export declare const setLocalStrategy: (
   findUser: FindUser,
@@ -21,6 +25,7 @@ declare const NextjsAppPassport: {
   APILoginRoute: typeof APILoginRoute
   APILogoutRoute: typeof APILogoutRoute
   APIRefreshSessionRoute: typeof APIRefreshSessionRoute
+  createLoginRoute: typeof createLoginRoute
   getSession: typeof getSession
   setLocalStrategy: typeof setLocalStrategy
   //@deprecated use setLocalStrategy instead

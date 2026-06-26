@@ -3,8 +3,11 @@ import { NextRequest } from 'next/server'
 import NextjsAppPassport from '@/index'
 
 const mockLogin = jest.fn()
+const mockCreateLoginRoute = jest.fn()
 jest.mock('@/app/api/login', () => ({
-  loginRoute: async () => mockLogin()
+  loginRoute: async () => mockLogin(),
+  createLoginRoute: (findUser: any, validatePassword: any) =>
+    mockCreateLoginRoute(findUser, validatePassword)
 }))
 const mockLogout = jest.fn()
 jest.mock('@/app/api/logout', () => ({
@@ -40,5 +43,12 @@ describe('@/index', () => {
 
     NextjsAppPassport.setLocalStrategy(findUser, validatePassword)
     expect(mockStrategy).toHaveBeenCalledTimes(1)
+
+    NextjsAppPassport.createLoginRoute(findUser, validatePassword)
+    expect(mockCreateLoginRoute).toHaveBeenCalledTimes(1)
+    expect(mockCreateLoginRoute).toHaveBeenCalledWith(
+      findUser,
+      validatePassword
+    )
   })
 })

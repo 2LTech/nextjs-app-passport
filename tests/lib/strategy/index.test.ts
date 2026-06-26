@@ -1,4 +1,9 @@
-import { setLocalStrategy } from '@/lib/strategy'
+import {
+  buildLocalStrategy,
+  hasLocalStrategy,
+  setLocalStrategy,
+  STRATEGY_NAME
+} from '@/lib/strategy'
 import { NextRequest } from 'next/server'
 import passport from 'passport'
 
@@ -11,7 +16,7 @@ jest.mock('@/defs', () => ({
 const authenticate = (req: NextRequest): Promise<any> =>
   new Promise((resolve, reject) => {
     passport.authenticate(
-      'next-app-passport',
+      STRATEGY_NAME,
       { session: false },
       (err: Error, user: any) => {
         if (err) reject(err)
@@ -96,5 +101,35 @@ describe('@/lib/strategy', () => {
     } catch (err: any) {
       expect(err.message).toBe('json error')
     }
+  })
+
+  test('STRATEGY_NAME', () => {
+    expect(STRATEGY_NAME).toBe('next-app-passport')
+  })
+
+  test('buildLocalStrategy returns a fresh, isolated strategy', () => {
+    const a = buildLocalStrategy(findUser, validatePassword)
+    const b = buildLocalStrategy(findUser, validatePassword)
+    // Each call is a distinct instance, so it can be registered per request
+    // without sharing global state.
+    expect(a).not.toBe(b)
+    expect(typeof a.authenticate).toBe('function')
+  })
+
+  test('hasLocalStrategy reflects global registration', () => {
+    // Registered
+    setLocalStrategy(findUser, validatePassword)
+    expect(hasLocalStrategy()).toBe(true)
+
+    // Not registered (registry present, slot empty)
+    passport.unuse(STRATEGY_NAME)
+    expect(hasLocalStrategy()).toBe(false)
+
+    // Defensive: passport without the internal `_strategy` lookup
+    const registry = passport as unknown as { _strategy?: unknown }
+    const original = registry._strategy
+    delete registry._strategy
+    expect(hasLocalStrategy()).toBe(false)
+    registry._strategy = original
   })
 })
