@@ -26,6 +26,8 @@ jobs:
         run: yarn test
       - name: Typecheck published types
         run: yarn typecheck:types
+      - name: Pack manifest
+        run: yarn check:pack
       - name: Build
         run: yarn build
       - name: SonarCloud Scan

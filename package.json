@@ -15,6 +15,7 @@
   },
   "files": [
     "build/",
+    "index.d.ts",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
@@ -29,6 +30,7 @@
     "doc": "typedoc",
     "test": "jest --config .config/jest.config.js",
     "typecheck:types": "tsc -p tests/types/tsconfig.json",
+    "check:pack": "node .config/check-pack.mjs",
     "build": "tsc -p tsconfig.build.json && tsc-alias",
     "check": ".github/workflows/check.local.sh",
     "sonar": ".github/workflows/sonar.local.sh",

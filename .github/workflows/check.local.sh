@@ -40,6 +40,11 @@ echo "[+] Typecheck published types..."
 yarn typecheck:types
 echo "    ok"
 
+# Pack manifest (ensure the published tarball actually ships ./index.d.ts)
+echo "[+] Pack manifest..."
+yarn check:pack
+echo "    ok"
+
 # Build
 echo "[+] Build..."
 yarn build
