@@ -24,6 +24,8 @@ jobs:
         run: yarn doc
       - name: Test
         run: yarn test
+      - name: Typecheck published types
+        run: yarn typecheck:types
       - name: Build
         run: yarn build
       - name: SonarCloud Scan

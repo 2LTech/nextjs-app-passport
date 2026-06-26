@@ -168,6 +168,18 @@ describe('@/lib/session', () => {
     } catch (err: any) {
       expect(err.message).toBe('expired error')
     }
+
+    // Malformed/tampered token: getSession does NOT wrap Iron.unseal, so the
+    // raw decryption error surfaces unchanged to the caller.
+    mockUnseal.mockImplementation(() => {
+      throw new Error('Bad hmac value')
+    })
+    try {
+      await getSession()
+      expect(true).toBe(false)
+    } catch (err: any) {
+      expect(err.message).toBe('Bad hmac value')
+    }
   })
 
   test('refreshSession', async () => {
@@ -180,6 +192,22 @@ describe('@/lib/session', () => {
       expect(err.message).toBe('token empty')
     }
     expect(mockGet).toHaveBeenCalledTimes(1)
+
+    // Expired: refreshSession enforces lifetime via getSession BEFORE
+    // re-issuing, so an expired session is rejected and the cookie is never
+    // overwritten (no new token is minted for a dead session).
+    mockGet.mockImplementation(() => ({ value: 'token' }))
+    mockUnseal.mockImplementation(() => ({
+      createdAt: 0,
+      maxAge: MAX_AGE
+    }))
+    try {
+      await refreshSession()
+      expect(true).toBe(false)
+    } catch (err: any) {
+      expect(err.message).toBe('expired error')
+    }
+    expect(mockSet).not.toHaveBeenCalled()
 
     // Normal
     mockGet.mockImplementation(() => ({ value: 'token' }))
@@ -202,6 +230,11 @@ describe('@/lib/session', () => {
         sameSite: 'lax'
       }
     )
+    // The sealed payload (token string is stubbed) carries a freshly minted
+    // 64-hex CSRF token and a re-stamped createdAt.
+    const [sealedSession] = mockSeal.mock.calls.at(-1)![0]
+    expect(sealedSession.csrfToken).toMatch(/^[0-9a-f]{64}$/)
+    expect(sealedSession.createdAt).toBe(Date.now())
 
     // Wrong issuedAt
     mockGet.mockImplementation(() => ({ value: 'token' }))

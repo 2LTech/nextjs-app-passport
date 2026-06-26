@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": false,
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "next/server": ["./stubs/next-server.ts"]
+    }
+  },
+  "include": ["consumer.ts", "stubs/next-server.ts"]
+}

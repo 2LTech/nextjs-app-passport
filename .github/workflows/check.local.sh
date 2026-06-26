@@ -35,6 +35,11 @@ if [ -n "$activateBrowse" ]; then
 fi
 echo "    ok"
 
+# Typecheck published types (consumer fixture against ./index.d.ts)
+echo "[+] Typecheck published types..."
+yarn typecheck:types
+echo "    ok"
+
 # Build
 echo "[+] Build..."
 yarn build
