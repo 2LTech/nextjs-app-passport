@@ -79,6 +79,18 @@ describe('@/lib/security', () => {
       expect(isSameOrigin(makeReq('POST'))).toBe(true)
     })
 
+    test('same-site with no Origin is rejected (metadata present but untrusted)', () => {
+      expect(
+        isSameOrigin(makeReq('POST', { 'sec-fetch-site': 'same-site' }))
+      ).toBe(false)
+    })
+
+    test('unknown Fetch Metadata value with no Origin is rejected', () => {
+      expect(
+        isSameOrigin(makeReq('POST', { 'sec-fetch-site': 'future-value' }))
+      ).toBe(false)
+    })
+
     test('matching Origin and Host is allowed', () => {
       expect(
         isSameOrigin(

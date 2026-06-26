@@ -41,8 +41,11 @@ export const isSameOrigin = (req: NextRequest): boolean => {
 
   // `same-site` and unknown/absent metadata require an exact Origin/Host match.
   const origin = req.headers.get('origin')
-  // No usable metadata and no Origin → not a browser CSRF request: fail open
-  if (!origin) return true
+  // Fail open only when there is no signal at all (no Fetch Metadata AND no
+  // Origin) — e.g. a server-to-server or native client call. When Fetch
+  // Metadata is present but untrusted (`same-site` / unknown), a missing
+  // Origin cannot be validated, so it is rejected.
+  if (!origin) return !secFetchSite
 
   const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host')
   if (!host) return false
