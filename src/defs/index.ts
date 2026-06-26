@@ -5,7 +5,14 @@ export const SECURE_COOKIE =
     : false
 
 // Token secret
-export const TOKEN_SECRET = process.env.NEXTJS_APP_PASSPORT_TOKEN!
+export const TOKEN_SECRET_MIN_LENGTH = 32
+const TMP_TOKEN_SECRET = process.env.NEXTJS_APP_PASSPORT_TOKEN
+if (!TMP_TOKEN_SECRET || TMP_TOKEN_SECRET.length < TOKEN_SECRET_MIN_LENGTH) {
+  throw new Error(
+    `NEXTJS_APP_PASSPORT_TOKEN must be set and at least ${TOKEN_SECRET_MIN_LENGTH} characters long`
+  )
+}
+export const TOKEN_SECRET = TMP_TOKEN_SECRET
 
 // Token name
 export const TOKEN_NAME = 'nextjs-app-passport-token'
