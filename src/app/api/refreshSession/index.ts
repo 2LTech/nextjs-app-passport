@@ -1,4 +1,5 @@
 import { refreshSession } from '@/lib/session'
+import { errorResponse } from '@/lib/api/response'
 
 /**
  * Refresh session route
@@ -9,8 +10,7 @@ export const refreshSessionRoute = async (): Promise<Response> => {
     await refreshSession()
 
     return Response.json({ ok: true })
-  } catch (err: any) {
-    console.error(err)
-    return Response.json({ ok: false, err: err.message })
+  } catch (err) {
+    return errorResponse(err)
   }
 }
