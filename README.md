@@ -80,28 +80,37 @@ export const POST = APILoginRoute
 Type:
 
 ```typescript
-type APILogoutRoute = async () => Response
+type APILogoutRoute = async (req: NextRequest) => Response
 ```
 
 Usage in `app/api/[logoutRouteName]/route.[js|ts]`:
 
 ```typescript
-export const GET = APILogoutRoute
+export const POST = APILogoutRoute
 ```
+
+> Logout is state-changing, so it is served over `POST` only. The handler
+> rejects non-`POST` methods (`405`) and cross-site requests (`403`), which
+> protects it against logout-CSRF and link prefetchers.
 
 ## `APIRefreshSessionRoute`
 
 Type:
 
 ```typescript
-type APIRefreshSessionRoute = async () => Response
+type APIRefreshSessionRoute = async (req: NextRequest) => Response
 ```
 
 Usage in `app/api/[refreshSessionRouteName]/route.[js|ts]`:
 
 ```typescript
-export const GET = APIRefreshSessionRoute
+export const POST = APIRefreshSessionRoute
 ```
+
+> Refresh is state-changing (it slides the session window), so it is served
+> over `POST` only. The handler rejects non-`POST` methods (`405`) and
+> cross-site requests (`403`), which prevents silent cross-site session
+> extension via top-level navigation or prefetch.
 
 ## `getSession`
 

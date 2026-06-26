@@ -9,8 +9,10 @@ export interface Session {
 }
 
 export declare const APILoginRoute: (req: NextRequest) => Promise<Response>
-export declare const APILogoutRoute: () => Promise<Response>
-export declare const APIRefreshSessionRoute: () => Promise<Response>
+export declare const APILogoutRoute: (req: NextRequest) => Promise<Response>
+export declare const APIRefreshSessionRoute: (
+  req: NextRequest
+) => Promise<Response>
 export declare const getSession: () => Promise<Session>
 export declare const setLocalStrategy: (
   findUser: FindUser,
