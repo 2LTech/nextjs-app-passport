@@ -202,6 +202,10 @@ describe('@/lib/session', () => {
         sameSite: 'lax'
       }
     )
+    // The dead CSRF control (AIR-195) was removed: refresh must not seal a
+    // csrfToken. mockSeal is called as mockSeal([session, secret, options]).
+    const sealedSession = mockSeal.mock.calls[0][0][0]
+    expect(sealedSession).not.toHaveProperty('csrfToken')
 
     // Wrong issuedAt
     mockGet.mockImplementation(() => ({ value: 'token' }))

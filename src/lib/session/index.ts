@@ -1,6 +1,5 @@
 import Iron from '@hapi/iron'
 import { cookies } from 'next/headers'
-import { randomBytes } from 'node:crypto'
 
 import { Session } from '@/defs/index.d'
 import {
@@ -109,9 +108,6 @@ export const refreshSession = async () => {
   const session = await getSession()
 
   try {
-    // Generate a new CSRF token
-    const newCsrfToken = randomBytes(32).toString('hex')
-
     // Preserve absolute max age
     const issuedAtRaw = Number(session.issuedAt)
     const issuedAt = Number.isFinite(issuedAtRaw)
@@ -121,7 +117,6 @@ export const refreshSession = async () => {
     // Create a new session
     const newSession = {
       ...session,
-      csrfToken: newCsrfToken,
       createdAt: Date.now(),
       issuedAt
     }
