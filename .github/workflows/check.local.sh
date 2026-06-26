@@ -35,6 +35,11 @@ if [ -n "$activateBrowse" ]; then
 fi
 echo "    ok"
 
+# Type test (declaration-level coverage of the published index.d.ts)
+echo "[+] Type test..."
+yarn test:types
+echo "    ok"
+
 # Build
 echo "[+] Build..."
 yarn build

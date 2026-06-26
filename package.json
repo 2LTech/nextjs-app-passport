@@ -28,6 +28,7 @@
     "prettier": "prettier -l '**/*.{js,jsx,ts,tsx,json,md,css}'",
     "doc": "typedoc",
     "test": "jest --config .config/jest.config.js",
+    "test:types": "tsc -p tsconfig.types.json",
     "build": "tsc -p tsconfig.build.json && tsc-alias",
     "check": ".github/workflows/check.local.sh",
     "sonar": ".github/workflows/sonar.local.sh",

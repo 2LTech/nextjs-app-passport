@@ -28,13 +28,15 @@ You have to define your own `findUser` and `validatePassword` function to set pa
 Type:
 
 ```typescript
-type setLocalStrategy = <TUser = unknown>(
+type setLocalStrategy = <TUser extends { id: string } = { id: string }>(
   findUser: (body: unknown) => Promise<TUser | null | undefined>,
   validatePassword: (user: TUser, body: unknown) => boolean
 ) => void
 ```
 
-`setLocalStrategy` is generic over your own user type `TUser`. The request `body` is typed `unknown` so you must narrow/validate it before use, and the `TUser` you return from `findUser` flows into `validatePassword` (and can be retrieved later through `getSession<TUser>()`).
+`setLocalStrategy` is generic over your own user type `TUser`. The request `body` is typed `unknown` so you must narrow/validate it before use, and the `TUser` you return from `findUser` flows into `validatePassword`.
+
+`TUser` is constrained to `{ id: string }`: the user resolved by `findUser` is stored verbatim in the session, and every session exposes a string `id` (see `Session` below), so the stored user must carry one. The same fields can later be retrieved with `getSession<TUser>()`.
 
 Usage:
 
@@ -55,7 +57,7 @@ Typically used in the API login route to initialize passport.
 Type:
 
 ```typescript
-type FindUser<TUser = unknown> = (
+type FindUser<TUser extends { id: string } = { id: string }> = (
   body: unknown
 ) => Promise<TUser | null | undefined>
 ```
@@ -67,7 +69,10 @@ This function should find an user from request body content (see `APILoginRoute`
 Type:
 
 ```typescript
-type ValidatePassword<TUser = unknown> = (user: TUser, body: unknown) => boolean
+type ValidatePassword<TUser extends { id: string } = { id: string }> = (
+  user: TUser,
+  body: unknown
+) => boolean
 ```
 
 This function should validate the password using the user data (for example hash, salt, ...).
@@ -130,15 +135,27 @@ type getSession = <TUser = unknown>() => Promise<
 ```
 
 Pass your own user type to get a strongly typed session, e.g.
-`const session = await getSession<User>()`. Unknown keys are typed `unknown`
-so you must narrow them before use.
+`const session = await getSession<User>()`. With the default `TUser = unknown`,
+unknown keys are typed `unknown`, so you must pass a type (or narrow) before
+reading them.
+
+> :information_source: `TUser` is a **caller-provided assertion** of the extra
+> fields stored alongside the base session — it is not validated at runtime.
+> Make sure the object you persist through `setLocalStrategy`/login actually
+> matches the type you assert here.
 
 Usage in `app/api/[getSessionRouteName]/route.[js|ts]`:
 
 ```typescript
+interface User {
+  id: string
+  username: string
+}
+
 export const GET = async () => {
   try {
-    const session = await getSession()
+    // Pass your user type so `session.username` is typed instead of `unknown`.
+    const session = await getSession<User>()
     // Be careful! The entire user object is returned
     // Filter session to not send hash, salt, ...
     return Response.json({

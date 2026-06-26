@@ -1,9 +1,12 @@
 import { NextRequest } from 'next/server'
 
-export type FindUser<TUser = unknown> = (
+/** Minimal contract every authenticated user must satisfy (a string `id`). */
+export type SessionUser = { id: string }
+
+export type FindUser<TUser extends SessionUser = SessionUser> = (
   body: unknown
 ) => Promise<TUser | null | undefined>
-export type ValidatePassword<TUser = unknown> = (
+export type ValidatePassword<TUser extends SessionUser = SessionUser> = (
   user: TUser,
   body: unknown
 ) => boolean
@@ -16,8 +19,16 @@ export interface Session {
 export declare const APILoginRoute: (req: NextRequest) => Promise<Response>
 export declare const APILogoutRoute: () => Promise<Response>
 export declare const APIRefreshSessionRoute: () => Promise<Response>
+/**
+ * Returns the decrypted session. `TUser` is a caller-provided assertion of the
+ * extra fields stored alongside the base {@link Session}; it is not verified at
+ * runtime, so the object persisted by `setLocalStrategy`/login must actually
+ * satisfy `Session & TUser`.
+ */
 export declare const getSession: <TUser = unknown>() => Promise<Session & TUser>
-export declare const setLocalStrategy: <TUser = unknown>(
+export declare const setLocalStrategy: <
+  TUser extends SessionUser = SessionUser
+>(
   findUser: FindUser<TUser>,
   validatePassword: ValidatePassword<TUser>
 ) => void

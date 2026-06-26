@@ -3,8 +3,14 @@
 - Type the public API with generics instead of `any`:
   - `setLocalStrategy<TUser>`, `FindUser<TUser>`, `ValidatePassword<TUser>` and
     `getSession<TUser>()` now flow a caller-provided user type through the API.
+  - `setLocalStrategy`/`FindUser`/`ValidatePassword` constrain `TUser` to the
+    `SessionUser` contract (`{ id: string }`) so the stored user stays
+    compatible with the base `Session`; `getSession<TUser>()` remains a
+    documented caller assertion.
   - Request bodies are typed `unknown` (consumers must narrow them) and the
     `Session` index signature is now `unknown` instead of `any`.
+- Add declaration-level type coverage (`yarn test:types`) that type-checks the
+  published `index.d.ts`, wired into the check pipeline.
 - Document the stateless-session / logout revocation limitation, the
   `GET`-as-mutation (CSRF) tradeoff for logout and refresh, and that the
   `NEXTJS_APP_PASSPORT_TOKEN` minimum length is enforced at startup.
