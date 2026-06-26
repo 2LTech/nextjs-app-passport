@@ -1,4 +1,5 @@
 import { removeCookie } from '@/lib/session'
+import { errorResponse } from '@/lib/response'
 
 /**
  * Logout route
@@ -9,8 +10,7 @@ export const logoutRoute = async (): Promise<Response> => {
     await removeCookie()
 
     return Response.json({ ok: true })
-  } catch (err: any) {
-    console.error(err)
-    return Response.json({ ok: false, err: err.message })
+  } catch (err) {
+    return errorResponse(err)
   }
 }

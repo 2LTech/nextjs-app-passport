@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 
 import login from '@/lib/login'
+import { errorResponse } from '@/lib/response'
 
 /**
  * Login route
@@ -12,8 +13,7 @@ export const loginRoute = async (req: NextRequest): Promise<Response> => {
     await login(req)
 
     return Response.json({ ok: true })
-  } catch (err: any) {
-    console.error(err)
-    return Response.json({ ok: false, err: err.message })
+  } catch (err) {
+    return errorResponse(err)
   }
 }
