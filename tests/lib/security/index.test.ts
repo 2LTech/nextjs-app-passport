@@ -25,10 +25,40 @@ describe('@/lib/security', () => {
       ).toBe(true)
     })
 
-    test('same-site is allowed', () => {
+    test('same-site cross-origin is rejected (not trusted on its own)', () => {
       expect(
-        isSameOrigin(makeReq('POST', { 'sec-fetch-site': 'same-site' }))
+        isSameOrigin(
+          makeReq('POST', {
+            'sec-fetch-site': 'same-site',
+            origin: 'https://evil.example.com',
+            host: 'app.example.com'
+          })
+        )
+      ).toBe(false)
+    })
+
+    test('same-site falls through to an Origin/Host match', () => {
+      expect(
+        isSameOrigin(
+          makeReq('POST', {
+            'sec-fetch-site': 'same-site',
+            origin: 'https://app.example.com',
+            host: 'app.example.com'
+          })
+        )
       ).toBe(true)
+    })
+
+    test('unknown Fetch Metadata value requires an Origin/Host match', () => {
+      expect(
+        isSameOrigin(
+          makeReq('POST', {
+            'sec-fetch-site': 'future-value',
+            origin: 'https://evil.example.com',
+            host: 'app.example.com'
+          })
+        )
+      ).toBe(false)
     })
 
     test('none (direct user action) is allowed', () => {
@@ -119,6 +149,22 @@ describe('@/lib/security', () => {
     test('rejects a cross-site POST with 403', async () => {
       const res = guardStateChange(
         makeReq('POST', { 'sec-fetch-site': 'cross-site' })
+      )
+      expect(res).not.toBeNull()
+      expect(res!.status).toBe(403)
+
+      const data = await res!.json()
+      expect(data.ok).toBe(false)
+      expect(data.err).toBe(errors.invalidOrigin)
+    })
+
+    test('rejects a same-site cross-origin POST with 403', async () => {
+      const res = guardStateChange(
+        makeReq('POST', {
+          'sec-fetch-site': 'same-site',
+          origin: 'https://evil.example.com',
+          host: 'app.example.com'
+        })
       )
       expect(res).not.toBeNull()
       expect(res!.status).toBe(403)

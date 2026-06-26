@@ -60,6 +60,22 @@ describe('@/app/api/refresh', () => {
     expect(data.err).toBe(errors.invalidOrigin)
   })
 
+  test('rejects same-site cross-origin POST before refreshing the session', async () => {
+    const res = await refreshSessionRoute(
+      makeReq('POST', {
+        'sec-fetch-site': 'same-site',
+        origin: 'https://evil.example.com',
+        host: 'app.example.com'
+      })
+    )
+    expect(res.status).toBe(403)
+    expect(mockRefreshSession).not.toHaveBeenCalled()
+
+    const data = await res.json()
+    expect(data.ok).toBe(false)
+    expect(data.err).toBe(errors.invalidOrigin)
+  })
+
   test('error', async () => {
     const error = 'refresh error'
     mockRefreshSession.mockImplementation(() => {

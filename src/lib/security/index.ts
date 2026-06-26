@@ -3,33 +3,45 @@ import { NextRequest } from 'next/server'
 import { errors } from '@/defs'
 
 /**
- * Decide whether a request is same-origin / same-site (i.e. not a cross-site
- * CSRF vector).
+ * Decide whether a request is same-origin (i.e. not a CSRF vector).
  *
  * The auth cookie is `SameSite=Lax`, which is still attached to cross-site
  * *top-level* navigations and prefetches, so cookie presence alone does not
- * prove the request was initiated by our own site. We therefore inspect the
+ * prove the request was initiated by our own origin. We therefore inspect the
  * request origin:
  *
- * 1. Prefer the browser-set `Sec-Fetch-Site` Fetch Metadata header. It cannot
- *    be forged by cross-site script, so it is the most reliable signal. Only
- *    `cross-site` is treated as hostile; `same-origin` / `same-site` are
- *    trusted and `none` is a direct user action (typed URL, bookmark).
+ * 1. Prefer the browser-set `Sec-Fetch-Site` Fetch Metadata header (it cannot
+ *    be forged by cross-site script):
+ *    - `same-origin` → trusted (our own origin).
+ *    - `none` → a direct user action (typed URL, bookmark) with no cross-site
+ *      initiator, so it is not a CSRF vector.
+ *    - `cross-site` → rejected.
+ *    - `same-site` (a sibling origin under the same registrable domain, which
+ *      may be attacker-controlled) and any unknown value are NOT trusted on
+ *      their own: they fall through to the exact `Origin`/`Host` check below.
+ *      Same-site is not the same as same-origin.
  * 2. Fall back to comparing the `Origin` header host against the request
- *    `Host` (`X-Forwarded-Host` when proxied) for clients that do not send
- *    Fetch Metadata.
- * 3. When neither header is present the request is not a browser-driven CSRF
- *    attempt (e.g. a server-to-server or native client call), so we fail open.
+ *    `Host` (`X-Forwarded-Host` when proxied) for `same-site` / unknown
+ *    metadata and for clients that do not send Fetch Metadata.
+ * 3. When neither the metadata nor an `Origin` header is present the request
+ *    is not a browser-driven CSRF attempt (e.g. a server-to-server or native
+ *    client call), so we fail open.
  *
  * @param req Incoming request
- * @returns true when the request may proceed, false when it is cross-site
+ * @returns true when the request may proceed, false when it is cross-origin
  */
 export const isSameOrigin = (req: NextRequest): boolean => {
   const secFetchSite = req.headers.get('sec-fetch-site')
-  if (secFetchSite) return secFetchSite !== 'cross-site'
 
+  // Trust only an explicit same-origin request or a direct user action.
+  if (secFetchSite === 'same-origin' || secFetchSite === 'none') return true
+
+  // The clear CSRF vector.
+  if (secFetchSite === 'cross-site') return false
+
+  // `same-site` and unknown/absent metadata require an exact Origin/Host match.
   const origin = req.headers.get('origin')
-  // No Fetch Metadata and no Origin → not a browser CSRF request: fail open
+  // No usable metadata and no Origin → not a browser CSRF request: fail open
   if (!origin) return true
 
   const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host')
@@ -64,7 +76,7 @@ export const guardStateChange = (req: NextRequest): Response | null => {
     )
   }
 
-  // Anti-CSRF: reject cross-site requests
+  // Anti-CSRF: reject requests that are not same-origin
   if (!isSameOrigin(req)) {
     return Response.json(
       { ok: false, err: errors.invalidOrigin },

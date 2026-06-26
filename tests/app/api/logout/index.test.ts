@@ -60,6 +60,22 @@ describe('@/app/api/logout', () => {
     expect(data.err).toBe(errors.invalidOrigin)
   })
 
+  test('rejects same-site cross-origin POST before removing the cookie', async () => {
+    const res = await logoutRoute(
+      makeReq('POST', {
+        'sec-fetch-site': 'same-site',
+        origin: 'https://evil.example.com',
+        host: 'app.example.com'
+      })
+    )
+    expect(res.status).toBe(403)
+    expect(mockRemoveCookie).not.toHaveBeenCalled()
+
+    const data = await res.json()
+    expect(data.ok).toBe(false)
+    expect(data.err).toBe(errors.invalidOrigin)
+  })
+
   test('error', async () => {
     const error = 'logout error'
     mockRemoveCookie.mockImplementation(() => {

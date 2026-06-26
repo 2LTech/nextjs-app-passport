@@ -90,8 +90,10 @@ export const POST = APILogoutRoute
 ```
 
 > Logout is state-changing, so it is served over `POST` only. The handler
-> rejects non-`POST` methods (`405`) and cross-site requests (`403`), which
-> protects it against logout-CSRF and link prefetchers.
+> rejects non-`POST` methods (`405`) and requests that are not same-origin
+> (`403`) — cross-site requests, and same-site requests whose `Origin` does not
+> match the `Host`, are refused. This protects it against logout-CSRF and link
+> prefetchers.
 
 ## `APIRefreshSessionRoute`
 
@@ -108,9 +110,10 @@ export const POST = APIRefreshSessionRoute
 ```
 
 > Refresh is state-changing (it slides the session window), so it is served
-> over `POST` only. The handler rejects non-`POST` methods (`405`) and
-> cross-site requests (`403`), which prevents silent cross-site session
-> extension via top-level navigation or prefetch.
+> over `POST` only. The handler rejects non-`POST` methods (`405`) and requests
+> that are not same-origin (`403`) — cross-site requests, and same-site
+> requests whose `Origin` does not match the `Host`, are refused. This prevents
+> silent cross-origin session extension via top-level navigation or prefetch.
 
 ## `getSession`
 
