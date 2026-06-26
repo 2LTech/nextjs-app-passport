@@ -57,11 +57,11 @@ export const removeCookie = async () => {
  * @returns Expiry
  */
 export const sessionExpireAt = (session: Session): number => {
-  const createAt = +session.createdAt
-  const maxAge = +session.maxAge
+  const createAt = Number(session.createdAt)
+  const maxAge = Number(session.maxAge)
   if (!Number.isFinite(createAt) || !Number.isFinite(maxAge)) return 0
 
-  const issuedAtRaw = +session.issuedAt
+  const issuedAtRaw = Number(session.issuedAt)
   const issuedAt = Number.isFinite(issuedAtRaw) ? issuedAtRaw : createAt
 
   const slidingExpiry = createAt + maxAge * 1_000 //ms
@@ -72,13 +72,21 @@ export const sessionExpireAt = (session: Session): number => {
 
 /**
  * Get session
+ *
+ * The returned object is the decrypted user payload merged with the base
+ * {@link Session} fields. Pass `TUser` to flow your own user type through to
+ * callers, e.g. `getSession<{ username: string }>()`.
+ *
+ * @typeParam TUser - Shape of the user record stored in the session.
  * @returns Session
  */
-export const getSession = async (): Promise<Session> => {
+export const getSession = async <TUser = unknown>(): Promise<
+  Session & TUser
+> => {
   const token = await getCookie()
   if (!token) throw new Error(errors.tokenNotFound)
 
-  // Descrupt session data
+  // Decrypt session data
   const session = await Iron.unseal(token, TOKEN_SECRET, ironOptions)
 
   // Validate lifetime
@@ -86,7 +94,7 @@ export const getSession = async (): Promise<Session> => {
     throw new Error(errors.sessionExpired)
   }
 
-  return session
+  return session as Session & TUser
 }
 
 /**

@@ -12,11 +12,14 @@ You can see an example in [nextjs-app-passport-demo](https://github.com/2LTech/n
 
 ### `NEXTJS_APP_PASSPORT_TOKEN` (mandatory)
 
-Used to encrypt the cookie, minimum 32 characters length.
+Used to encrypt the cookie, minimum 32 characters length. This is enforced at
+startup: the module throws on import if the variable is missing or shorter than
+32 characters.
 
 ### `NEXTJS_APP_PASSPORT_UNSECURE` (optional)
 
-If defined, allow usage of cookie over HTTP connection.
+If defined, allow usage of cookie over HTTP connection. Only intended for local
+development; leaving it set in production disables the `Secure` cookie flag.
 
 ## `setLocalStrategy`
 
@@ -25,16 +28,24 @@ You have to define your own `findUser` and `validatePassword` function to set pa
 Type:
 
 ```typescript
-type setLocalStrategy = async (
-  findUser: (body: any) => Promise<any>,
-  validatePassword: (user: any, body: any) => boolean
+type setLocalStrategy = <TUser = unknown>(
+  findUser: (body: unknown) => Promise<TUser | null | undefined>,
+  validatePassword: (user: TUser, body: unknown) => boolean
 ) => void
 ```
+
+`setLocalStrategy` is generic over your own user type `TUser`. The request `body` is typed `unknown` so you must narrow/validate it before use, and the `TUser` you return from `findUser` flows into `validatePassword` (and can be retrieved later through `getSession<TUser>()`).
 
 Usage:
 
 ```typescript
-setLocalStrategy(findUser, validatePassword)
+interface User {
+  id: string
+  username: string
+}
+
+// TUser is inferred as `User` from the callbacks, or set it explicitly.
+setLocalStrategy<User>(findUser, validatePassword)
 ```
 
 Typically used in the API login route to initialize passport.
@@ -44,17 +55,19 @@ Typically used in the API login route to initialize passport.
 Type:
 
 ```typescript
-type FindUser = (body: any) => Promise<any>
+type FindUser<TUser = unknown> = (
+  body: unknown
+) => Promise<TUser | null | undefined>
 ```
 
-This function should find an user from request body content (see `APILoginRoute`) and return it, or nothing if no user is found.
+This function should find an user from request body content (see `APILoginRoute`) and return it, or `null`/`undefined` if no user is found.
 
 ### `validatePassword`
 
 Type:
 
 ```typescript
-type ValidatePassword = (user: any, body: any) => boolean
+type ValidatePassword<TUser = unknown> = (user: TUser, body: unknown) => boolean
 ```
 
 This function should validate the password using the user data (for example hash, salt, ...).
@@ -108,11 +121,17 @@ export const GET = APIRefreshSessionRoute
 Type:
 
 ```typescript
-type getSession = async () => {
-  id: string
-  [key: string]: any
-}
+type getSession = <TUser = unknown>() => Promise<
+  {
+    id: string
+    [key: string]: unknown
+  } & TUser
+>
 ```
+
+Pass your own user type to get a strongly typed session, e.g.
+`const session = await getSession<User>()`. Unknown keys are typed `unknown`
+so you must narrow them before use.
 
 Usage in `app/api/[getSessionRouteName]/route.[js|ts]`:
 
@@ -137,3 +156,33 @@ export const GET = async () => {
 ```
 
 > :warning: Be careful that `getSession` return the entire `user` object that can contain some sensitive informations as hash or salt for example.
+
+## Security considerations
+
+### Stateless sessions: logout cannot revoke server-side
+
+Sessions are fully stateless: the encrypted [iron](https://hapi.dev/module/iron/)
+cookie is the only source of truth and there is no server-side session store or
+denylist. `APILogoutRoute` only deletes the client cookie — it does **not**
+invalidate the token server-side. As a consequence, a cookie value that was
+captured before logout stays valid until it expires (and `APIRefreshSessionRoute`
+can extend it up to the absolute lifetime).
+
+If you need to revoke sessions on the server (for example on "log out
+everywhere" or on credential change), add your own mechanism, such as a
+token-id denylist or a per-user `tokenVersion` claim that you check inside your
+`getSession` wrapper.
+
+Two lifetimes bound every session: a sliding `MAX_AGE` (8 hours, refreshed on
+each `APIRefreshSessionRoute` call) and an absolute lifetime (7 days) that
+refresh cannot extend.
+
+### `GET` for logout / refresh
+
+`APILogoutRoute` and `APIRefreshSessionRoute` are documented as `GET` handlers
+even though they mutate state (clearing/rotating the cookie). This keeps usage
+simple — they can be triggered by a plain navigation or `<img>`/`fetch` GET —
+but it means they are not protected by the browser's method-based CSRF
+expectations. If CSRF is a concern for your application, expose them as `POST`
+routes instead (the handlers themselves are method-agnostic) and/or require the
+session `csrfToken` rotated by `APIRefreshSessionRoute`.

@@ -97,4 +97,24 @@ describe('@/lib/strategy', () => {
       expect(err.message).toBe('json error')
     }
   })
+
+  test('generic user type flows through', async () => {
+    interface User {
+      id: string
+      username: string
+    }
+
+    // Typed callbacks: `body` is `unknown` (narrowed here), `user` is `User`.
+    const typedFindUser = async (body: unknown): Promise<User | null> => {
+      const { username } = body as { username: string }
+      return { id: 'id', username }
+    }
+    const typedValidatePassword = (user: User, body: unknown): boolean =>
+      user.username === (body as { username: string }).username
+
+    // TUser is inferred as `User` from the typed callbacks.
+    setLocalStrategy(typedFindUser, typedValidatePassword)
+    const user = await authenticate(req)
+    expect(user).toEqual({ id: 'id', username: 'username' })
+  })
 })

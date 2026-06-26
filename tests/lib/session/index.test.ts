@@ -170,6 +170,25 @@ describe('@/lib/session', () => {
     }
   })
 
+  test('getSession generic user type', async () => {
+    interface User {
+      username: string
+    }
+
+    mockGet.mockImplementation(() => ({ value: 'token' }))
+    mockUnseal.mockImplementation(() => ({
+      id: 'id',
+      username: 'username',
+      createdAt: Date.now(),
+      maxAge: MAX_AGE
+    }))
+
+    const session = await getSession<User>()
+    // `username` is typed as `string` thanks to the generic.
+    expect(session.username).toBe('username')
+    expect(session.id).toBe('id')
+  })
+
   test('refreshSession', async () => {
     // Empty
     mockGet.mockImplementation(() => ({ value: undefined }))
