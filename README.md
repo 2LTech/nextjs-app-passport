@@ -97,7 +97,7 @@ Type:
 type createLoginRoute = (
   findUser: (body: any) => Promise<any>,
   validatePassword: (user: any, body: any) => boolean
-) => async (req: NextRequest) => Response
+) => (req: NextRequest) => Promise<Response>
 ```
 
 Usage in `app/api/[loginRouteName]/route.[js|ts]`:
