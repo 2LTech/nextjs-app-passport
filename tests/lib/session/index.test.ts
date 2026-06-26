@@ -18,36 +18,47 @@ jest.mock('next/headers', () => ({
   })
 }))
 
+const mockSeal = jest.fn()
 const mockUnseal = jest.fn()
 jest.mock('@hapi/iron', () => ({
-  seal: async () => 'cryptedToken',
-  unseal: async () => mockUnseal()
+  seal: async (...args: any) => mockSeal(args),
+  unseal: async (...args: any) => mockUnseal(args)
 }))
 
+const MAX_AGE = 60 * 60 * 8
+const ABSOLUTE_MAX_AGE = 60 * 60 * 24
+const TOKEN_SECRET = 'token-secret'
+const IRON_TTL = MAX_AGE * 1_000
 jest.mock('@/defs', () => ({
   errors: {
     tokenNotFound: 'token empty',
     sessionExpired: 'expired error',
     refreshFailed: 'refresh error'
   },
-  MAX_AGE: 60 * 60 * 8,
+  MAX_AGE,
+  ABSOLUTE_MAX_AGE,
   SECURE_COOKIE: false,
   TOKEN_NAME: 'nextjs-app-passport',
-  NEXTJS_APP_PASSPORT_TOKEN: 'abcdefghijklmnopqrstuvwxyz123456789'
+  TOKEN_SECRET
 }))
 
-jest.useFakeTimers().setSystemTime(new Date('1986-11-20'))
+jest.useFakeTimers()
 
 describe('@/lib/session', () => {
   const session = { id: 'id' }
 
   beforeEach(() => {
+    jest.setSystemTime(new Date('1986-11-20'))
+
     mockSet.mockReset()
     mockGet.mockReset()
     mockDelete.mockReset()
+
+    mockSeal.mockReset()
+    mockSeal.mockImplementation(() => 'cryptedToken')
     mockUnseal.mockReset()
     mockUnseal.mockImplementation(() => ({
-      createdAt: new Date(),
+      createdAt: Date.now(),
       maxAge: 60 * 60 * 8
     }))
   })
@@ -57,7 +68,7 @@ describe('@/lib/session', () => {
     expect(mockSet).toHaveBeenCalledTimes(1)
     expect(mockSet).toHaveBeenCalledWith('nextjs-app-passport', 'token', {
       maxAge: 60 * 60 * 8,
-      expires: new Date(Date.now() + 60 * 60 * 8 * 1000),
+      expires: new Date(Date.now() + 60 * 60 * 8 * 1_000),
       httpOnly: true,
       secure: false,
       path: '/',
@@ -90,7 +101,7 @@ describe('@/lib/session', () => {
       'cryptedToken',
       {
         maxAge: 60 * 60 * 8,
-        expires: new Date(Date.now() + 60 * 60 * 8 * 1000),
+        expires: new Date(Date.now() + 60 * 60 * 8 * 1_000),
         httpOnly: true,
         secure: false,
         path: '/',
@@ -113,14 +124,43 @@ describe('@/lib/session', () => {
     mockGet.mockImplementation(() => ({ value: 'token' }))
     const value = await getSession()
     expect(value).toEqual({
-      createdAt: new Date(),
-      maxAge: 60 * 60 * 8
+      createdAt: Date.now(),
+      maxAge: MAX_AGE
     })
+    expect(mockUnseal).toHaveBeenCalledWith([
+      'token',
+      TOKEN_SECRET,
+      { ttl: IRON_TTL }
+    ])
 
     // Expired
     mockUnseal.mockImplementation(() => ({
       createdAt: 0,
-      maxAge: 60 * 60 * 8
+      maxAge: MAX_AGE
+    }))
+    try {
+      await getSession()
+      expect(true).toBe(false)
+    } catch (err: any) {
+      expect(err.message).toBe('expired error')
+    }
+
+    // Wrong createdAt
+    mockUnseal.mockImplementation(() => ({
+      createdAt: Number.NaN,
+      maxAge: MAX_AGE
+    }))
+    try {
+      await getSession()
+      expect(true).toBe(false)
+    } catch (err: any) {
+      expect(err.message).toBe('expired error')
+    }
+
+    // Wrong maxAge
+    mockUnseal.mockImplementation(() => ({
+      createdAt: Date.now(),
+      maxAge: Number.NaN
     }))
     try {
       await getSession()
@@ -132,6 +172,7 @@ describe('@/lib/session', () => {
 
   test('refreshSession', async () => {
     // Empty
+    mockGet.mockImplementation(() => ({ value: undefined }))
     try {
       await refreshSession()
       expect(true).toBe(false)
@@ -142,6 +183,11 @@ describe('@/lib/session', () => {
 
     // Normal
     mockGet.mockImplementation(() => ({ value: 'token' }))
+    mockUnseal.mockImplementation(() => ({
+      createdAt: Date.now(),
+      maxAge: 60 * 60 * 8,
+      issuedAt: Date.now()
+    }))
     await refreshSession()
     expect(mockSet).toHaveBeenCalledTimes(1)
     expect(mockSet).toHaveBeenCalledWith(
@@ -149,7 +195,29 @@ describe('@/lib/session', () => {
       'cryptedToken',
       {
         maxAge: 60 * 60 * 8,
-        expires: new Date(Date.now() + 60 * 60 * 8 * 1000),
+        expires: new Date(Date.now() + 60 * 60 * 8 * 1_000),
+        httpOnly: true,
+        secure: false,
+        path: '/',
+        sameSite: 'lax'
+      }
+    )
+
+    // Wrong issuedAt
+    mockGet.mockImplementation(() => ({ value: 'token' }))
+    mockUnseal.mockImplementation(() => ({
+      createdAt: Date.now(),
+      maxAge: 60 * 60 * 8,
+      issuedAt: Number.NaN
+    }))
+    await refreshSession()
+    expect(mockSet).toHaveBeenCalledTimes(2)
+    expect(mockSet).toHaveBeenCalledWith(
+      'nextjs-app-passport',
+      'cryptedToken',
+      {
+        maxAge: 60 * 60 * 8,
+        expires: new Date(Date.now() + 60 * 60 * 8 * 1_000),
         httpOnly: true,
         secure: false,
         path: '/',
@@ -158,7 +226,7 @@ describe('@/lib/session', () => {
     )
 
     // Error
-    mockUnseal.mockImplementation(() => {
+    mockSeal.mockImplementation(() => {
       throw new Error('unseal error')
     })
     try {

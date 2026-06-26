@@ -8,8 +8,15 @@ import {
   MAX_AGE,
   TOKEN_NAME,
   TOKEN_SECRET,
-  SECURE_COOKIE
+  SECURE_COOKIE,
+  ABSOLUTE_MAX_AGE
 } from '@/defs'
+
+// Iron options
+const ironOptions = {
+  ...Iron.defaults,
+  ttl: MAX_AGE * 1_000 // ms
+}
 
 /**
  * Set cookie
@@ -19,7 +26,7 @@ export const setCookie = async (token: string) => {
   const cookieStore = await cookies()
   cookieStore.set(TOKEN_NAME, token, {
     maxAge: MAX_AGE,
-    expires: new Date(Date.now() + MAX_AGE * 1000),
+    expires: new Date(Date.now() + MAX_AGE * 1_000),
     httpOnly: true,
     secure: SECURE_COOKIE,
     path: '/',
@@ -45,15 +52,22 @@ export const removeCookie = async () => {
 }
 
 /**
- * Set session
+ * Compute session expiry time
  * @param session Session
+ * @returns Expiry
  */
-export const setSession = async (session: Session) => {
-  const createdAt = Date.now()
-  const obj = { ...session, createdAt, maxAge: MAX_AGE }
-  const token = await Iron.seal(obj, TOKEN_SECRET, Iron.defaults)
+export const sessionExpireAt = (session: Session): number => {
+  const createAt = +session.createdAt
+  const maxAge = +session.maxAge
+  if (!Number.isFinite(createAt) || !Number.isFinite(maxAge)) return 0
 
-  await setCookie(token)
+  const issuedAtRaw = +session.issuedAt
+  const issuedAt = Number.isFinite(issuedAtRaw) ? issuedAtRaw : createAt
+
+  const slidingExpiry = createAt + maxAge * 1_000 //ms
+  const absoluteExpiry = issuedAt + ABSOLUTE_MAX_AGE * 1_000 //ms
+
+  return Math.min(slidingExpiry, absoluteExpiry)
 }
 
 /**
@@ -64,12 +78,11 @@ export const getSession = async (): Promise<Session> => {
   const token = await getCookie()
   if (!token) throw new Error(errors.tokenNotFound)
 
-  // Decrypt session data
-  const session = await Iron.unseal(token, TOKEN_SECRET, Iron.defaults)
-  const expiresAt = session.createdAt + session.maxAge * 1000
+  // Descrupt session data
+  const session = await Iron.unseal(token, TOKEN_SECRET, ironOptions)
 
-  // Validate the expiration date of the session
-  if (Date.now() > expiresAt) {
+  // Validate lifetime
+  if (Date.now() > sessionExpireAt(session)) {
     throw new Error(errors.sessionExpired)
   }
 
@@ -77,28 +90,44 @@ export const getSession = async (): Promise<Session> => {
 }
 
 /**
+ * Set session
+ * @param session Session
+ */
+export const setSession = async (session: Session) => {
+  const createdAt = Date.now()
+  const obj = { ...session, createdAt, issuedAt: createdAt, maxAge: MAX_AGE }
+  const token = await Iron.seal(obj, TOKEN_SECRET, ironOptions)
+
+  await setCookie(token)
+}
+
+/**
  * Refresh session
  */
 export const refreshSession = async () => {
-  const token = await getCookie()
-  if (!token) throw new Error(errors.tokenNotFound)
+  // Enforce lifetime before re-issuing a new token
+  const session = await getSession()
 
   try {
-    // Decrypt session data
-    const session = await Iron.unseal(token, TOKEN_SECRET, Iron.defaults)
-
     // Generate a new CSRF token
     const newCsrfToken = randomBytes(32).toString('hex')
+
+    // Preserve absolute max age
+    const issuedAtRaw = Number(session.issuedAt)
+    const issuedAt = Number.isFinite(issuedAtRaw)
+      ? issuedAtRaw
+      : Number(session.createdAt)
 
     // Create a new session
     const newSession = {
       ...session,
       csrfToken: newCsrfToken,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      issuedAt
     }
 
     // Encrypt the new session data
-    const newToken = await Iron.seal(newSession, TOKEN_SECRET, Iron.defaults)
+    const newToken = await Iron.seal(newSession, TOKEN_SECRET, ironOptions)
 
     // Set the new session cookie
     await setCookie(newToken)

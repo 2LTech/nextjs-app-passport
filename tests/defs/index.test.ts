@@ -1,6 +1,7 @@
 import {
   errors,
   MAX_AGE,
+  ABSOLUTE_MAX_AGE,
   SECURE_COOKIE,
   TOKEN_NAME,
   TOKEN_SECRET_MIN_LENGTH
@@ -49,6 +50,11 @@ describe('@/defs', () => {
 
   test('MAX_AGE', () => {
     expect(MAX_AGE).toBeDefined()
+  })
+
+  test('ABSOLUTE_MAX_AGE', () => {
+    expect(ABSOLUTE_MAX_AGE).toBeDefined()
+    expect(ABSOLUTE_MAX_AGE).toBeGreaterThan(MAX_AGE)
   })
 
   test('errors', () => {
