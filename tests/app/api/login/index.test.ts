@@ -9,12 +9,18 @@ import { internalErrorMessage } from '@/lib/api/response'
 const mockLogin = jest.fn()
 jest.mock('@/lib/login', () => async () => mockLogin())
 
+const mockGuard = jest.fn()
+jest.mock('@/lib/api/security', () => ({
+  guard: () => mockGuard()
+}))
+
 describe('@/app/api/login', () => {
   const req = {} as NextRequest
   let consoleError: jest.SpyInstance
 
   beforeEach(() => {
     mockLogin.mockReset()
+    mockGuard.mockReset()
 
     consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
   })
@@ -30,6 +36,17 @@ describe('@/app/api/login', () => {
 
     const data = await res.json()
     expect(data.ok).toBe(true)
+  })
+
+  test('guard', async () => {
+    mockGuard.mockImplementation(() =>
+      Response.json({ ok: false }, { status: 403 })
+    )
+    const res = await loginRoute(req)
+    expect(res.status).toBe(403)
+
+    const data = await res.json()
+    expect(data.ok).toBe(false)
   })
 
   test('invalid authentication, 401', async () => {

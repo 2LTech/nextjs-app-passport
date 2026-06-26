@@ -32,10 +32,10 @@ describe('@/index', () => {
     await NextjsAppPassport.APILoginRoute(req)
     expect(mockLogin).toHaveBeenCalledTimes(1)
 
-    await NextjsAppPassport.APILogoutRoute()
+    await NextjsAppPassport.APILogoutRoute(req)
     expect(mockLogout).toHaveBeenCalledTimes(1)
 
-    await NextjsAppPassport.APIRefreshSessionRoute()
+    await NextjsAppPassport.APIRefreshSessionRoute(req)
     expect(mockRefreshSession).toHaveBeenCalledTimes(1)
 
     NextjsAppPassport.setLocalStrategy(findUser, validatePassword)
