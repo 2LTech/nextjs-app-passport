@@ -6,6 +6,7 @@ import { setSession } from '@/lib/session'
 import {
   buildCustomStrategy,
   FindUser,
+  SerializeUser,
   strategyName,
   ValidatePassword
 } from '../strategy'
@@ -56,14 +57,26 @@ const authenticate = (
  * Create login
  * @param findUser FindUser function
  * @param validatePassword validatePassword function
+ * @param serializeUser Optional projection applied to the authenticated user
+ * before it is sealed into the session cookie (see buildCustomStrategy).
  * @returns Login
  */
 const createLogin =
-  (findUser: FindUser, validatePassword: ValidatePassword) =>
+  (
+    findUser: FindUser,
+    validatePassword: ValidatePassword,
+    serializeUser?: SerializeUser
+  ) =>
   async (request: NextRequest): Promise<void> => {
     const instance = new passport.Passport()
-    instance.use(strategyName, buildCustomStrategy(findUser, validatePassword))
+    instance.use(
+      strategyName,
+      buildCustomStrategy(findUser, validatePassword, serializeUser)
+    )
 
+    // `user` has already been projected by the strategy's serializeUser hook, so
+    // only the serialized fields reach here (the default serializer drops
+    // well-known top-level credential fields such as hash/salt).
     const user = await authenticate(instance, request)
     if (!user) throw new Error(errors.invalidAuthentication)
 
