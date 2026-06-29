@@ -230,11 +230,12 @@ describe('@/lib/session', () => {
         sameSite: 'lax'
       }
     )
-    // The sealed payload (token string is stubbed) carries a freshly minted
-    // 64-hex CSRF token and a re-stamped createdAt.
+    // The sealed payload (token string is stubbed) re-stamps createdAt and
+    // preserves issuedAt, so the sliding window resets without extending the
+    // absolute lifetime cap.
     const [sealedSession] = mockSeal.mock.calls.at(-1)![0]
-    expect(sealedSession.csrfToken).toMatch(/^[0-9a-f]{64}$/)
     expect(sealedSession.createdAt).toBe(Date.now())
+    expect(sealedSession.issuedAt).toBe(Date.now())
 
     // Wrong issuedAt
     mockGet.mockImplementation(() => ({ value: 'token' }))

@@ -9,23 +9,26 @@
  * This file imports the published declarations exactly as a consumer's
  * bundler resolves the `types` entry, and is type-checked (never emitted or
  * executed) by `yarn typecheck:types` with `skipLibCheck: false`. Any
- * regression in `index.d.ts` therefore fails the pipeline.
+ * regression in `index.d.ts` therefore fails the pipeline. The usage mirrors
+ * the published declaration surface (not the runtime), since that is what a
+ * downstream `tsc` actually sees.
  */
-import { NextRequest } from 'next/server'
-
 import NextjsAppPassport, {
-  APILoginRoute,
+  APICreateLoginRoute,
   APILogoutRoute,
   APIRefreshSessionRoute,
   getSession,
-  setLocalStrategy,
   type FindUser,
   type ValidatePassword,
   type Session
 } from '../../index'
 
-// API route handlers must match the Next.js App Router contract.
-const login: (req: NextRequest) => Promise<Response> = APILoginRoute
+// The login route is built from the consumer's auth callbacks.
+const findUser: FindUser = async (body: any) => body
+const validatePassword: ValidatePassword = (_user: any, _body: any) => true
+const login: Promise<Response> = APICreateLoginRoute(findUser, validatePassword)
+
+// Logout / refresh take no arguments and resolve to a Response.
 const logout: () => Promise<Response> = APILogoutRoute
 const refresh: () => Promise<Response> = APIRefreshSessionRoute
 
@@ -35,13 +38,11 @@ async function readId(): Promise<string> {
   return session.id
 }
 
-// Strategy setup uses the published FindUser / ValidatePassword types.
-const findUser: FindUser = async (body: any) => body
-const validatePassword: ValidatePassword = (_user: any, _body: any) => true
-setLocalStrategy(findUser, validatePassword)
-
-// The default export bundles the same surface, including the deprecated alias.
-NextjsAppPassport.setLocaLStrategy(findUser, validatePassword)
+// The default export bundles the same surface.
+const viaDefault: Promise<Response> = NextjsAppPassport.APICreateLoginRoute(
+  findUser,
+  validatePassword
+)
 
 // Reference every binding so the fixture is a self-contained, used module.
 export const __fixture = {
@@ -49,5 +50,6 @@ export const __fixture = {
   logout,
   refresh,
   readId,
+  viaDefault,
   defaultExport: NextjsAppPassport
 }

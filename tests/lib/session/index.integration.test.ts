@@ -5,7 +5,8 @@
  * `@/defs` (the test bootstrap pins a valid 32-char `NEXTJS_APP_PASSPORT_TOKEN`
  * in `.config/jest.setupe.js`). Only `next/headers` is mocked, with an
  * in-memory cookie jar, so the genuine seal -> unseal round-trip, the secret,
- * and the CSRF/createdAt fields injected by `refreshSession` are all exercised.
+ * and the createdAt/issuedAt fields re-stamped by `refreshSession` are all
+ * exercised.
  */
 import Iron from '@hapi/iron'
 
@@ -82,20 +83,20 @@ describe('@/lib/session (integration with real @hapi/iron)', () => {
     await expect(getSession()).rejects.toThrow()
   })
 
-  test('refreshSession issues a fresh 64-hex csrfToken and re-stamps createdAt', async () => {
-    await setSession({ id: 'user-42', csrfToken: 'stale-csrf' })
+  test('refreshSession re-stamps createdAt while preserving identity and issuedAt', async () => {
+    await setSession({ id: 'user-42', role: 'admin' })
     const before = await getSession()
 
     const refreshedAt = Date.now()
     await refreshSession()
     const after = await getSession()
 
-    // Identity is preserved
+    // Identity and arbitrary session fields survive the refresh
     expect(after.id).toBe('user-42')
-    // A fresh 64-hex CSRF token replaced the stale one
-    expect(after.csrfToken).toMatch(/^[0-9a-f]{64}$/)
-    expect(after.csrfToken).not.toBe(before.csrfToken)
-    // createdAt is re-stamped to (at least) the refresh time
+    expect(after.role).toBe('admin')
+    // createdAt is re-stamped to (at least) the refresh time (sliding window)
     expect(after.createdAt).toBeGreaterThanOrEqual(refreshedAt)
+    // issuedAt is preserved so the absolute lifetime cap is not extended
+    expect(after.issuedAt).toBe(before.issuedAt)
   })
 })

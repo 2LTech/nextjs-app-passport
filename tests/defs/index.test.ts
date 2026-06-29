@@ -100,7 +100,9 @@ describe('@/defs', () => {
       sessionExpired: 'Session expired',
       refreshFailed: 'Failed to refresh session',
       invalidAuthentication: 'Invalid username or password',
-      invalidLogin: 'Invalid username and password combination'
+      invalidLogin: 'Invalid username and password combination',
+      methodNotAllowed: 'Method not allowed',
+      invalidOrigin: 'Cross-site request rejected'
     })
   })
 })
