@@ -13,6 +13,8 @@
  * the published declaration surface (not the runtime), since that is what a
  * downstream `tsc` actually sees.
  */
+import { NextRequest } from 'next/server'
+
 import NextjsAppPassport, {
   APICreateLoginRoute,
   APILogoutRoute,
@@ -23,10 +25,17 @@ import NextjsAppPassport, {
   type Session
 } from '../../index'
 
-// The login route is built from the consumer's auth callbacks.
+// The login route is a FACTORY: it takes the consumer's auth callbacks and
+// returns the actual Next.js route handler `(req) => Promise<Response>`. Mounted
+// as `export const POST = APICreateLoginRoute(findUser, validatePassword)`.
+// Asserting the handler shape (not a bare Promise) is what makes this fixture
+// fail if `index.d.ts` regresses to the wrong return type.
 const findUser: FindUser = async (body: any) => body
 const validatePassword: ValidatePassword = (_user: any, _body: any) => true
-const login: Promise<Response> = APICreateLoginRoute(findUser, validatePassword)
+const login: (req: NextRequest) => Promise<Response> = APICreateLoginRoute(
+  findUser,
+  validatePassword
+)
 
 // Logout / refresh take no arguments and resolve to a Response.
 const logout: () => Promise<Response> = APILogoutRoute
@@ -38,11 +47,9 @@ async function readId(): Promise<string> {
   return session.id
 }
 
-// The default export bundles the same surface.
-const viaDefault: Promise<Response> = NextjsAppPassport.APICreateLoginRoute(
-  findUser,
-  validatePassword
-)
+// The default export bundles the same surface, with the same factory contract.
+const viaDefault: (req: NextRequest) => Promise<Response> =
+  NextjsAppPassport.APICreateLoginRoute(findUser, validatePassword)
 
 // Reference every binding so the fixture is a self-contained, used module.
 export const __fixture = {

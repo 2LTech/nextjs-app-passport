@@ -209,12 +209,15 @@ describe('@/lib/session', () => {
     }
     expect(mockSet).not.toHaveBeenCalled()
 
-    // Normal
+    // Normal. issuedAt is deliberately a distinct earlier timestamp (still
+    // within the absolute window) so preservation is proven independently of
+    // the re-stamped createdAt, not by coincidental equality with Date.now().
+    const priorIssuedAt = Date.now() - 1_000
     mockGet.mockImplementation(() => ({ value: 'token' }))
     mockUnseal.mockImplementation(() => ({
       createdAt: Date.now(),
       maxAge: 60 * 60 * 8,
-      issuedAt: Date.now()
+      issuedAt: priorIssuedAt
     }))
     await refreshSession()
     expect(mockSet).toHaveBeenCalledTimes(1)
@@ -230,12 +233,13 @@ describe('@/lib/session', () => {
         sameSite: 'lax'
       }
     )
-    // The sealed payload (token string is stubbed) re-stamps createdAt and
-    // preserves issuedAt, so the sliding window resets without extending the
-    // absolute lifetime cap.
+    // The sealed payload (token string is stubbed) re-stamps createdAt to "now"
+    // while preserving the original issuedAt, so the sliding window resets
+    // without extending the absolute lifetime cap.
     const [sealedSession] = mockSeal.mock.calls.at(-1)![0]
     expect(sealedSession.createdAt).toBe(Date.now())
-    expect(sealedSession.issuedAt).toBe(Date.now())
+    expect(sealedSession.issuedAt).toBe(priorIssuedAt)
+    expect(sealedSession.issuedAt).not.toBe(sealedSession.createdAt)
 
     // Wrong issuedAt
     mockGet.mockImplementation(() => ({ value: 'token' }))

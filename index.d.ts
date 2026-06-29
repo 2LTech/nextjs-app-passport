@@ -11,7 +11,7 @@ export interface Session {
 export declare const APICreateLoginRoute: (
   findUser: FindUser,
   validatePassword: ValidatePassword
-) => Promise<Response>
+) => (request: NextRequest) => Promise<Response>
 export declare const APILogoutRoute: () => Promise<Response>
 export declare const APIRefreshSessionRoute: () => Promise<Response>
 export declare const getSession: () => Promise<Session>
