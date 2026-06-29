@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server'
-import passport from 'passport'
 import Custom from 'passport-custom'
 
 import { errors } from '@/defs'
