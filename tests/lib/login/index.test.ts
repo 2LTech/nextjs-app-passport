@@ -68,6 +68,7 @@ describe('@/lib/login', () => {
     } catch (err: any) {
       expect(err.message).toBe('invalidAuthentication')
     }
+    expect(mockAuthenticate).toHaveBeenCalledTimes(1)
     expect(mockSetSession).toHaveBeenCalledTimes(0)
   })
 
@@ -82,6 +83,30 @@ describe('@/lib/login', () => {
     } catch (err: any) {
       expect(err.message).toBe('authenticate error')
     }
+    expect(mockAuthenticate).toHaveBeenCalledTimes(1)
     expect(mockSetSession).toHaveBeenCalledTimes(0)
+  })
+
+  test('defensive next() without error rejects as invalid authentication', async () => {
+    mockAuthenticate.mockImplementation(
+      () => (_req: unknown, _res: unknown, next: (err?: any) => void) => next()
+    )
+    await expect(createLogin(findUser, validatePassword)(req)).rejects.toThrow(
+      'invalidAuthentication'
+    )
+    expect(mockSetSession).toHaveBeenCalledTimes(0)
+  })
+
+  test('settles only once when callback and next both fire', async () => {
+    mockAuthenticate.mockImplementation(
+      (_strategy: string, _options: any, callback: Function) =>
+        (_req: unknown, _res: unknown, next: (err?: any) => void) => {
+          callback(null, { id: 'id' })
+          next(new Error('late error'))
+        }
+    )
+    await createLogin(findUser, validatePassword)(req)
+    expect(mockSetSession).toHaveBeenCalledTimes(1)
+    expect(mockSetSession).toHaveBeenCalledWith({ id: 'id' })
   })
 })

@@ -2,14 +2,15 @@ import { NextRequest } from 'next/server'
 
 import NextjsAppPassport from '@/index'
 
+import { FindUser, ValidatePassword } from '@/lib/strategy'
+
 const mockCreateLogin = jest.fn()
-jest.mock(
-  '@/app/api/login',
-  () =>
-    (...args: any) =>
+jest.mock('@/app/api/login', () => ({
+  createLoginRoute:
+    (findUser: FindUser, validatePassword: ValidatePassword) =>
     async (req: NextRequest) =>
-      mockCreateLogin(...args, req)
-)
+      mockCreateLogin(findUser, validatePassword, req)
+}))
 const mockLogout = jest.fn()
 jest.mock('@/app/api/logout', () => ({
   logoutRoute: async () => mockLogout()

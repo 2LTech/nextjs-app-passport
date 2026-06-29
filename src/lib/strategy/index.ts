@@ -40,14 +40,3 @@ export const buildCustomStrategy = (
         done(err)
       })
   })
-
-/**
- * Has local strategy
- * @returns true if local strategy is defined
- */
-export const hasLocalStrategy = (): boolean => {
-  const registry = passport as unknown as {
-    _strategy?: (name: string) => unknown
-  }
-  return Boolean(registry._strategy?.(strategyName))
-}
