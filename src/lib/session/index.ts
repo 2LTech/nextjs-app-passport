@@ -54,7 +54,7 @@ export const removeCookie = async () => {
  * Set session
  * @param session Session
  */
-export const setSession = async (session: Session) => {
+export const setSession = async (session: Partial<Session>) => {
   const createdAt = Date.now()
   const obj = {
     ...session,

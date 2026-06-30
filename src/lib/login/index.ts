@@ -16,8 +16,8 @@ interface Authenticator {
   authenticate(
     strategy: string,
     options: { session: boolean },
-    callback: (err: any, user?: any) => void
-  ): (req: unknown, res?: unknown, next?: (err?: any) => void) => void
+    callback: (err: Error, user?: unknown) => void
+  ): (req: unknown, res?: unknown, next?: (err?: Error) => void) => void
 }
 
 /**
@@ -25,30 +25,37 @@ interface Authenticator {
  * @param req Request
  * @returns Token
  */
-const authenticate = (
+const authenticate = <User extends MinimalSession>(
   instance: Authenticator,
   req: NextRequest
-): Promise<any> =>
+): Promise<User> =>
   new Promise((resolve, reject) => {
     // Guard against double-settling if both the callback and `next` ever fire.
     let settled = false
-    const settle = (fn: (value: any) => void, value: any) => {
+
+    const resolveOnce = (user: User) => {
       if (settled) return
       settled = true
-      fn(value)
+      resolve(user)
+    }
+
+    const rejectOnce = (err: Error) => {
+      if (settled) return
+      settled = true
+      reject(err)
     }
 
     const middleware = instance.authenticate(
       strategyName,
       { session: false },
-      (err: Error, user: any) => {
-        if (err) settle(reject, err)
-        else settle(resolve, user)
+      (err, user) => {
+        if (err) rejectOnce(err)
+        else resolveOnce(user as User)
       }
     )
 
-    const next = (err?: any) =>
-      settle(reject, err ?? new Error(errors.invalidAuthentication))
+    const next = (err?: Error) =>
+      rejectOnce(err ?? new Error(errors.invalidAuthentication))
 
     middleware(req, undefined, next)
   })

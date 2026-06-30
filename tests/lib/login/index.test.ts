@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 
 import createLogin from '@/lib/login'
+import { FindUser, ValidatePassword } from '@/lib/strategy'
+import { Session } from '@/defs/index.d'
 
 const mockAuthenticate = jest.fn()
 const mockUse = jest.fn()
@@ -16,8 +18,10 @@ const mockHasLocalStrategy = jest.fn()
 const mockBuildLocalStrategy = jest.fn()
 jest.mock('@/lib/strategy', () => ({
   strategyName: 'nextjs-app-passport',
-  buildCustomStrategy: (findUser: any, validatePassword: any) =>
-    mockBuildLocalStrategy(findUser, validatePassword)
+  buildCustomStrategy: (
+    findUser: FindUser<{ id: string }>,
+    validatePassword: ValidatePassword<{ id: string }>
+  ) => mockBuildLocalStrategy(findUser, validatePassword)
 }))
 
 jest.mock('@/defs', () => ({
@@ -28,7 +32,7 @@ jest.mock('@/defs', () => ({
 
 const mockSetSession = jest.fn()
 jest.mock('@/lib/session', () => ({
-  setSession: async (session: any) => mockSetSession(session)
+  setSession: async (session: Session) => mockSetSession(session)
 }))
 
 describe('@/lib/login', () => {
@@ -92,7 +96,8 @@ describe('@/lib/login', () => {
 
   test('defensive next() without error rejects as invalid authentication', async () => {
     mockAuthenticate.mockImplementation(
-      () => (_req: unknown, _res: unknown, next: (err?: any) => void) => next()
+      () => (_req: unknown, _res: unknown, next: (err?: Error) => void) =>
+        next()
     )
     await expect(createLogin(findUser, validatePassword)(req)).rejects.toThrow(
       'invalidAuthentication'
@@ -103,7 +108,7 @@ describe('@/lib/login', () => {
   test('settles only once when callback and next both fire', async () => {
     mockAuthenticate.mockImplementation(
       (_strategy: string, _options: any, callback: (...args: any) => void) =>
-        (_req: unknown, _res: unknown, next: (err?: any) => void) => {
+        (_req: unknown, _res: unknown, next: (err?: Error) => void) => {
           callback(null, { id: 'id' })
           next(new Error('late error'))
         }
