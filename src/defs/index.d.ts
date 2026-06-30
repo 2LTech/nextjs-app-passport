@@ -3,5 +3,8 @@
  */
 export interface Session {
   id: string
-  [key: string]: any
+  createdAt: number
+  issuedAt: number
+  maxAge: number
+  [key: string]: unknown
 }

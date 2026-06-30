@@ -39,8 +39,9 @@ describe('@/lib/login', () => {
   beforeEach(() => {
     mockAuthenticate.mockReset()
     mockAuthenticate.mockImplementation(
-      (_strategy: string, _options: any, callback: Function) => () =>
-        callback(null, { id: 'id' })
+      (_strategy: string, _options: any, callback: (...args: any) => void) =>
+        () =>
+          callback(null, { id: 'id' })
     )
     mockUse.mockReset()
     mockHasLocalStrategy.mockReset()
@@ -59,8 +60,9 @@ describe('@/lib/login', () => {
 
   test('empty user', async () => {
     mockAuthenticate.mockImplementation(
-      (_strategy: string, _options: any, callback: Function) => () =>
-        callback(null, false)
+      (_strategy: string, _options: any, callback: (...args: any) => void) =>
+        () =>
+          callback(null, false)
     )
     try {
       await createLogin(findUser, validatePassword)(req)
@@ -74,8 +76,9 @@ describe('@/lib/login', () => {
 
   test('authenticate error', async () => {
     mockAuthenticate.mockImplementation(
-      (_strategy: string, _options: any, callback: Function) => () =>
-        callback(new Error('authenticate error'), false)
+      (_strategy: string, _options: any, callback: (...args: any) => void) =>
+        () =>
+          callback(new Error('authenticate error'), false)
     )
     try {
       await createLogin(findUser, validatePassword)(req)
@@ -99,7 +102,7 @@ describe('@/lib/login', () => {
 
   test('settles only once when callback and next both fire', async () => {
     mockAuthenticate.mockImplementation(
-      (_strategy: string, _options: any, callback: Function) =>
+      (_strategy: string, _options: any, callback: (...args: any) => void) =>
         (_req: unknown, _res: unknown, next: (err?: any) => void) => {
           callback(null, { id: 'id' })
           next(new Error('late error'))

@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server'
 import createLogin from '@/lib/login'
 import { guard } from '@/lib/api/security'
 import { errorResponse } from '@/lib/api/response'
-import { FindUser, ValidatePassword } from '@/lib/strategy'
+import { FindUser, MinimalSession, ValidatePassword } from '@/lib/strategy'
 
 /**
  * Create login route
@@ -14,7 +14,10 @@ import { FindUser, ValidatePassword } from '@/lib/strategy'
  * @returns
  */
 export const createLoginRoute =
-  (findUser: FindUser, validatePassword: ValidatePassword) =>
+  <User extends MinimalSession>(
+    findUser: FindUser<User>,
+    validatePassword: ValidatePassword<User>
+  ) =>
   async (request: NextRequest): Promise<Response> => {
     try {
       const rejection = guard(request)

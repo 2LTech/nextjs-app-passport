@@ -1,20 +1,29 @@
 import { NextRequest } from 'next/server'
 
-export type FindUser = (body: any) => Promise<any>
-export type ValidatePassword = (user: any, body: any) => boolean
+export type MinimalSession = { id: string }
+export type FindUser<User extends MinimalSession> = (
+  body: unknown
+) => Promise<User | null | undefined>
+export type ValidatePassword<User extends MinimalSession> = (
+  user: User,
+  body: unknown
+) => boolean
 
 export interface Session {
   id: string
-  [key: string]: any
+  createdAt: number
+  issuedAt: number
+  maxAge: number
+  [key: string]: unknown
 }
 
-export declare const APICreateLoginRoute: (
-  findUser: FindUser,
-  validatePassword: ValidatePassword
-) => Promise<Response>
+export declare const APICreateLoginRoute: <User extends MinimalSession>(
+  findUser: FindUser<User>,
+  validatePassword: ValidatePassword<User>
+) => (request: NextRequest) => Promise<Response>
 export declare const APILogoutRoute: () => Promise<Response>
 export declare const APIRefreshSessionRoute: () => Promise<Response>
-export declare const getSession: () => Promise<Session>
+export declare const getSession: (additionalData?: string[]) => Promise<Session>
 
 declare const NextjsAppPassport: {
   APICreateLoginRoute: typeof APICreateLoginRoute

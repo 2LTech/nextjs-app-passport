@@ -51,16 +51,33 @@ export const removeCookie = async () => {
 }
 
 /**
+ * Set session
+ * @param session Session
+ */
+export const setSession = async (session: Session) => {
+  const createdAt = Date.now()
+  const obj = {
+    ...session,
+    createdAt,
+    issuedAt: createdAt,
+    maxAge: MAX_AGE
+  }
+  const token = await Iron.seal(obj, TOKEN_SECRET, ironOptions)
+
+  await setCookie(token)
+}
+
+/**
  * Compute session expiry time
  * @param session Session
  * @returns Expiry
  */
 export const sessionExpireAt = (session: Session): number => {
-  const createAt = +session.createdAt
-  const maxAge = +session.maxAge
+  const createAt = Number(session.createdAt)
+  const maxAge = Number(session.maxAge)
   if (!Number.isFinite(createAt) || !Number.isFinite(maxAge)) return 0
 
-  const issuedAtRaw = +session.issuedAt
+  const issuedAtRaw = Number(session.issuedAt)
   const issuedAt = Number.isFinite(issuedAtRaw) ? issuedAtRaw : createAt
 
   const slidingExpiry = createAt + maxAge * 1_000 //ms
@@ -71,13 +88,16 @@ export const sessionExpireAt = (session: Session): number => {
 
 /**
  * Get session
+ * @param additionalData Additional data to return
  * @returns Session
  */
-export const getSession = async (): Promise<Session> => {
+export const getSession = async (
+  additionalData?: string[]
+): Promise<Session> => {
   const token = await getCookie()
   if (!token) throw new Error(errors.tokenNotFound)
 
-  // Descrupt session data
+  // Decrypt session data
   const session = await Iron.unseal(token, TOKEN_SECRET, ironOptions)
 
   // Validate lifetime
@@ -85,19 +105,15 @@ export const getSession = async (): Promise<Session> => {
     throw new Error(errors.sessionExpired)
   }
 
-  return session
-}
-
-/**
- * Set session
- * @param session Session
- */
-export const setSession = async (session: Session) => {
-  const createdAt = Date.now()
-  const obj = { ...session, createdAt, issuedAt: createdAt, maxAge: MAX_AGE }
-  const token = await Iron.seal(obj, TOKEN_SECRET, ironOptions)
-
-  await setCookie(token)
+  // Session
+  const toReturn: Session = {
+    id: session.id,
+    createdAt: session.createdAt,
+    issuedAt: session.issuedAt,
+    maxAge: session.maxAge
+  }
+  additionalData?.forEach((d) => (toReturn[d] = session[d]))
+  return toReturn
 }
 
 /**
@@ -128,6 +144,6 @@ export const refreshSession = async () => {
     await setCookie(newToken)
   } catch (err) {
     console.error(errors.refreshFailed, err)
-    throw new Error(errors.refreshFailed)
+    throw new Error(errors.refreshFailed, { cause: err })
   }
 }

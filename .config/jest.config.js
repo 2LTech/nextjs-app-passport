@@ -1,6 +1,6 @@
 /** @type {import('jest').Config} */
 const config = {
-  // silent: true,
+  silent: true,
   rootDir: '..',
   testEnvironment: 'node',
   setupFiles: ['<rootDir>/.config/jest.setupe.js'],

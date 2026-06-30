@@ -23,8 +23,8 @@ jest.mock('@/lib/api/security', () => ({
 
 describe('@/app/api/login', () => {
   const req = {} as NextRequest
-  const findUser = jest.fn() as FindUser
-  const validatePassword = jest.fn() as ValidatePassword
+  const findUser = jest.fn() as FindUser<{ id: string }>
+  const validatePassword = jest.fn() as ValidatePassword<{ id: string }>
   let consoleError: jest.SpyInstance
 
   beforeEach(() => {

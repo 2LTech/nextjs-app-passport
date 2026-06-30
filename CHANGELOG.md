@@ -12,6 +12,8 @@
 
 # v2.0.0
 
+- Security improve
+
 :warn: BREAKING CHANGES
 
 - removed `APILoginRoute`and `setLocalStrategy`, use `APICreateLoginRoute`instead

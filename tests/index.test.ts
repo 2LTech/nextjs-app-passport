@@ -7,7 +7,10 @@ import { FindUser, ValidatePassword } from '@/lib/strategy'
 const mockCreateLogin = jest.fn()
 jest.mock('@/app/api/login', () => ({
   createLoginRoute:
-    (findUser: FindUser, validatePassword: ValidatePassword) =>
+    (
+      findUser: FindUser<{ id: string }>,
+      validatePassword: ValidatePassword<{ id: string }>
+    ) =>
     async (req: NextRequest) =>
       mockCreateLogin(findUser, validatePassword, req)
 }))

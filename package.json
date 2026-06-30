@@ -27,6 +27,7 @@
     "depcheck": "depcheck --ignores '@babel/*,@types/*,@sonar/scan'",
     "prettier": "prettier -l '**/*.{js,jsx,ts,tsx,json,md,css}'",
     "doc": "typedoc",
+    "lint": "eslint .",
     "test": "jest --config .config/jest.config.js",
     "build": "tsc -p tsconfig.build.json && tsc-alias",
     "check": ".github/workflows/check.local.sh",
@@ -42,6 +43,7 @@
     "@babel/core": "8.0.1",
     "@babel/preset-env": "8.0.2",
     "@babel/preset-typescript": "8.0.1",
+    "@eslint/js": "10.0.1",
     "@sonar/scan": "4.3.8",
     "@types/babel__core": "7.20.5",
     "@types/babel__preset-env": "7.10.0",
@@ -50,13 +52,16 @@
     "@types/passport": "1.0.17",
     "@types/react": "19.2.17",
     "depcheck": "1.4.7",
+    "eslint": "10.6.0",
+    "globals": "17.7.0",
     "jest": "30.4.2",
     "next": "16.2.9",
     "prettier": "3.8.4",
     "react": "19.2.7",
     "tsc-alias": "1.8.17",
     "typedoc": "0.28.19",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.62.0"
   },
   "packageManager": "yarn@4.17.0"
 }

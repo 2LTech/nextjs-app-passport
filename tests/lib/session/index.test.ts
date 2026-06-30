@@ -45,7 +45,12 @@ jest.mock('@/defs', () => ({
 jest.useFakeTimers()
 
 describe('@/lib/session', () => {
-  const session = { id: 'id' }
+  const session = {
+    id: 'id',
+    createdAt: Date.now(),
+    issuedAt: Date.now(),
+    maxAge: MAX_AGE
+  }
 
   beforeEach(() => {
     jest.setSystemTime(new Date('1986-11-20'))
@@ -58,8 +63,11 @@ describe('@/lib/session', () => {
     mockSeal.mockImplementation(() => 'cryptedToken')
     mockUnseal.mockReset()
     mockUnseal.mockImplementation(() => ({
+      id: 'id',
+      username: 'username',
       createdAt: Date.now(),
-      maxAge: 60 * 60 * 8
+      issuedAt: Date.now(),
+      maxAge: MAX_AGE
     }))
   })
 
@@ -67,8 +75,8 @@ describe('@/lib/session', () => {
     await setCookie('token')
     expect(mockSet).toHaveBeenCalledTimes(1)
     expect(mockSet).toHaveBeenCalledWith('nextjs-app-passport', 'token', {
-      maxAge: 60 * 60 * 8,
-      expires: new Date(Date.now() + 60 * 60 * 8 * 1_000),
+      maxAge: MAX_AGE,
+      expires: new Date(Date.now() + MAX_AGE * 1_000),
       httpOnly: true,
       secure: false,
       path: '/',
@@ -100,8 +108,8 @@ describe('@/lib/session', () => {
       'nextjs-app-passport',
       'cryptedToken',
       {
-        maxAge: 60 * 60 * 8,
-        expires: new Date(Date.now() + 60 * 60 * 8 * 1_000),
+        maxAge: MAX_AGE,
+        expires: new Date(Date.now() + MAX_AGE * 1_000),
         httpOnly: true,
         secure: false,
         path: '/',
@@ -124,8 +132,25 @@ describe('@/lib/session', () => {
     mockGet.mockImplementation(() => ({ value: 'token' }))
     const value = await getSession()
     expect(value).toEqual({
+      id: 'id',
       createdAt: Date.now(),
+      issuedAt: Date.now(),
       maxAge: MAX_AGE
+    })
+    expect(mockUnseal).toHaveBeenCalledWith([
+      'token',
+      TOKEN_SECRET,
+      { ttl: IRON_TTL }
+    ])
+
+    // Additional
+    const value2 = await getSession(['username'])
+    expect(value2).toEqual({
+      id: 'id',
+      createdAt: Date.now(),
+      issuedAt: Date.now(),
+      maxAge: MAX_AGE,
+      username: 'username'
     })
     expect(mockUnseal).toHaveBeenCalledWith([
       'token',
@@ -195,7 +220,7 @@ describe('@/lib/session', () => {
       'cryptedToken',
       {
         maxAge: 60 * 60 * 8,
-        expires: new Date(Date.now() + 60 * 60 * 8 * 1_000),
+        expires: new Date(Date.now() + MAX_AGE * 1_000),
         httpOnly: true,
         secure: false,
         path: '/',
@@ -207,7 +232,7 @@ describe('@/lib/session', () => {
     mockGet.mockImplementation(() => ({ value: 'token' }))
     mockUnseal.mockImplementation(() => ({
       createdAt: Date.now(),
-      maxAge: 60 * 60 * 8,
+      maxAge: MAX_AGE,
       issuedAt: Number.NaN
     }))
     await refreshSession()
@@ -216,8 +241,8 @@ describe('@/lib/session', () => {
       'nextjs-app-passport',
       'cryptedToken',
       {
-        maxAge: 60 * 60 * 8,
-        expires: new Date(Date.now() + 60 * 60 * 8 * 1_000),
+        maxAge: MAX_AGE,
+        expires: new Date(Date.now() + MAX_AGE * 1_000),
         httpOnly: true,
         secure: false,
         path: '/',

@@ -12,28 +12,38 @@ You can see an example in [nextjs-app-passport-demo](https://github.com/2LTech/n
 
 ### `NEXTJS_APP_PASSPORT_TOKEN` (mandatory)
 
-Used to encrypt the cookie, minimum 32 characters length.
+Used to encrypt the cookie, minimum `TOKEN_SECRET_MIN_LENGTH` (default 32) characters length. This is enforced at
+startup: the module throws on import if the variable is missing or shorter than
+`TOKEN_SECRET_MIN_LENGTH` characters.
 
 ### `NEXTJS_APP_PASSPORT_UNSECURE` (optional)
 
-If defined, allow usage of cookie over HTTP connection.
+If defined, allow usage of cookie over HTTP connection. Only intended for local
+development; leaving it set in production disables the `Secure` cookie flag.
 
 ### `findUser`
 
 Type:
 
 ```typescript
-type FindUser = (body: any) => Promise<any>
+export type MinimalSession = { id: string }
+export type FindUser<User extends MinimalSession> = (
+  body: unknown
+) => Promise<User | null | undefined>
 ```
 
-This function should find an user from request body content (see `APILoginRoute`) and return it, or nothing if no user is found.
+This function should find an user from request body content (see `APILoginRoute`) and return it, or `null | undefined` if no user is found.
 
 ### `validatePassword`
 
 Type:
 
 ```typescript
-type ValidatePassword = (user: any, body: any) => boolean
+export type MinimalSession = { id: string }
+export type ValidatePassword<User extends MinimalSession> = (
+  user: User,
+  body: unknown
+) => boolean
 ```
 
 This function should validate the password using the user data (for example hash, salt, ...).
@@ -45,10 +55,10 @@ It returns a login route handler bound to your `findUser`/`validatePassword`. Ea
 Type:
 
 ```typescript
-type APICreateLoginRoute = (
-  findUser: (body: any) => Promise<any>,
-  validatePassword: (user: any, body: any) => boolean
-) => (req: NextRequest) => Promise<Response>
+export declare const APICreateLoginRoute: <User extends MinimalSession>(
+  findUser: FindUser<User>,
+  validatePassword: ValidatePassword<User>
+) => Promise<Response>
 ```
 
 Usage in `app/api/[loginRouteName]/route.[js|ts]`:
@@ -62,13 +72,13 @@ export const POST = APICreateLoginRoute(findUser, validatePassword)
 Type:
 
 ```typescript
-type APILogoutRoute = async () => Response
+export declare const APILogoutRoute: () => Promise<Response>
 ```
 
 Usage in `app/api/[logoutRouteName]/route.[js|ts]`:
 
 ```typescript
-export const GET = APILogoutRoute
+export const POST = APILogoutRoute
 ```
 
 ## `APIRefreshSessionRoute`
@@ -76,13 +86,13 @@ export const GET = APILogoutRoute
 Type:
 
 ```typescript
-type APIRefreshSessionRoute = async () => Response
+export declare const APIRefreshSessionRoute: () => Promise<Response>
 ```
 
 Usage in `app/api/[refreshSessionRouteName]/route.[js|ts]`:
 
 ```typescript
-export const GET = APIRefreshSessionRoute
+export const POST = APIRefreshSessionRoute
 ```
 
 ## `getSession`
@@ -90,20 +100,21 @@ export const GET = APIRefreshSessionRoute
 Type:
 
 ```typescript
-type getSession = async () => {
+export interface Session {
   id: string
-  [key: string]: any
+  [key: string]: unknown
 }
+export declare const getSession: (additionalData?: string[]) => Promise<Session>
 ```
 
 Usage in `app/api/[getSessionRouteName]/route.[js|ts]`:
 
+Default returned values in Session are `id`, `createdAt` and `issuedAt`, you can return more data using `additionalData`.
+
 ```typescript
-export const GET = async () => {
+export const POST = async () => {
   try {
-    const session = await getSession()
-    // Be careful! The entire user object is returned
-    // Filter session to not send hash, salt, ...
+    const session = await getSession(['username'])
     return Response.json({
       ok: true,
       data: {
@@ -117,5 +128,3 @@ export const GET = async () => {
   }
 }
 ```
-
-> :warning: Be careful that `getSession` return the entire `user` object that can contain some sensitive informations as hash or salt for example.

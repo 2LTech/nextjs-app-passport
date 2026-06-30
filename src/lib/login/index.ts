@@ -6,9 +6,10 @@ import { setSession } from '@/lib/session'
 import {
   buildCustomStrategy,
   FindUser,
+  MinimalSession,
   strategyName,
   ValidatePassword
-} from '../strategy'
+} from '@/lib/strategy'
 
 // Interface
 interface Authenticator {
@@ -59,7 +60,10 @@ const authenticate = (
  * @returns Login
  */
 const createLogin =
-  (findUser: FindUser, validatePassword: ValidatePassword) =>
+  <User extends MinimalSession>(
+    findUser: FindUser<User>,
+    validatePassword: ValidatePassword<User>
+  ) =>
   async (request: NextRequest): Promise<void> => {
     const instance = new passport.Passport()
     instance.use(strategyName, buildCustomStrategy(findUser, validatePassword))

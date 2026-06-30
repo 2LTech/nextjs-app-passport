@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 
-import { removeCookie } from '@/lib/session'
 import { guard } from '@/lib/api/security'
 import { errorResponse } from '@/lib/api/response'
+import logout from '@/lib/logout'
 
 /**
  * Logout route
@@ -14,7 +14,7 @@ export const logoutRoute = async (request: NextRequest): Promise<Response> => {
     const rejection = guard(request)
     if (rejection) return rejection
 
-    await removeCookie()
+    await logout()
 
     return Response.json({ ok: true })
   } catch (err) {
