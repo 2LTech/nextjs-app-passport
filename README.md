@@ -43,7 +43,7 @@ export type MinimalSession = { id: string }
 export type ValidatePassword<User extends MinimalSession> = (
   user: User,
   body: unknown
-) => boolean
+) => Promise<boolean>
 ```
 
 This function should validate the password using the user data (for example hash, salt, ...).
@@ -58,7 +58,7 @@ Type:
 export declare const APICreateLoginRoute: <User extends MinimalSession>(
   findUser: FindUser<User>,
   validatePassword: ValidatePassword<User>
-) => Promise<Response>
+) => (request: NextRequest) => Promise<Response>
 ```
 
 Usage in `app/api/[loginRouteName]/route.[js|ts]`:
@@ -72,7 +72,7 @@ export const POST = APICreateLoginRoute(findUser, validatePassword)
 Type:
 
 ```typescript
-export declare const APILogoutRoute: () => Promise<Response>
+export declare const APILogoutRoute: (request: NextRequest) => Promise<Response>
 ```
 
 Usage in `app/api/[logoutRouteName]/route.[js|ts]`:
@@ -86,7 +86,9 @@ export const POST = APILogoutRoute
 Type:
 
 ```typescript
-export declare const APIRefreshSessionRoute: () => Promise<Response>
+export declare const APIRefreshSessionRoute: (
+  request: NextRequest
+) => Promise<Response>
 ```
 
 Usage in `app/api/[refreshSessionRouteName]/route.[js|ts]`:
@@ -102,6 +104,9 @@ Type:
 ```typescript
 export interface Session {
   id: string
+  createdAt: number
+  issuedAt: number
+  maxAge: number
   [key: string]: unknown
 }
 export declare const getSession: (additionalData?: string[]) => Promise<Session>

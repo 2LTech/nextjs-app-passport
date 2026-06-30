@@ -87,6 +87,21 @@ export const sessionExpireAt = (session: Session): number => {
 }
 
 /**
+ * Is Session (assertion function)
+ * @param session Session
+ */
+export function isSession(session: unknown): asserts session is Session {
+  if (
+    !session ||
+    !(session as Session).id ||
+    (session as Session).createdAt === undefined ||
+    (session as Session).issuedAt === undefined ||
+    (session as Session).maxAge === undefined
+  )
+    throw new Error(errors.invalidSession)
+}
+
+/**
  * Get session
  * @param additionalData Additional data to return
  * @returns Session
@@ -99,6 +114,9 @@ export const getSession = async (
 
   // Decrypt session data
   const session = await Iron.unseal(token, TOKEN_SECRET, ironOptions)
+
+  // Check session
+  isSession(session)
 
   // Validate lifetime
   if (Date.now() > sessionExpireAt(session)) {

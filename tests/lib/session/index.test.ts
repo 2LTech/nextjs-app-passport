@@ -33,7 +33,8 @@ jest.mock('@/defs', () => ({
   errors: {
     tokenNotFound: 'token empty',
     sessionExpired: 'expired error',
-    refreshFailed: 'refresh error'
+    refreshFailed: 'refresh error',
+    invalidSession: 'invalid session'
   },
   MAX_AGE,
   ABSOLUTE_MAX_AGE,
@@ -158,9 +159,20 @@ describe('@/lib/session', () => {
       { ttl: IRON_TTL }
     ])
 
+    // Wrong session
+    mockUnseal.mockImplementation(() => ({}))
+    try {
+      await getSession()
+      expect(true).toBe(false)
+    } catch (err: any) {
+      expect(err.message).toBe('invalid session')
+    }
+
     // Expired
     mockUnseal.mockImplementation(() => ({
+      id: 'id',
       createdAt: 0,
+      issuedAt: 0,
       maxAge: MAX_AGE
     }))
     try {
@@ -172,7 +184,9 @@ describe('@/lib/session', () => {
 
     // Wrong createdAt
     mockUnseal.mockImplementation(() => ({
+      id: 'id',
       createdAt: Number.NaN,
+      issuedAt: 0,
       maxAge: MAX_AGE
     }))
     try {
@@ -184,7 +198,9 @@ describe('@/lib/session', () => {
 
     // Wrong maxAge
     mockUnseal.mockImplementation(() => ({
+      id: 'id',
       createdAt: Date.now(),
+      issuedAt: 0,
       maxAge: Number.NaN
     }))
     try {
@@ -209,6 +225,7 @@ describe('@/lib/session', () => {
     // Normal
     mockGet.mockImplementation(() => ({ value: 'token' }))
     mockUnseal.mockImplementation(() => ({
+      id: 'id',
       createdAt: Date.now(),
       maxAge: 60 * 60 * 8,
       issuedAt: Date.now()
@@ -231,6 +248,7 @@ describe('@/lib/session', () => {
     // Wrong issuedAt
     mockGet.mockImplementation(() => ({ value: 'token' }))
     mockUnseal.mockImplementation(() => ({
+      id: 'id',
       createdAt: Date.now(),
       maxAge: MAX_AGE,
       issuedAt: Number.NaN

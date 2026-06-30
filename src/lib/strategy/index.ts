@@ -11,9 +11,31 @@ export type FindUser<User extends MinimalSession> = (
 export type ValidatePassword<User extends MinimalSession> = (
   user: User,
   body: unknown
-) => boolean
+) => Promise<boolean>
 
 export const strategyName = 'nextjs-app-passport'
+
+const findAndValidate = <User extends MinimalSession>(
+  findUser: FindUser<User>,
+  validatePassword: ValidatePassword<User>,
+  body: unknown,
+  done: Custom.VerifiedCallback
+) => {
+  findUser(body)
+    .then((user) => {
+      if (user) {
+        validatePassword(user, body)
+          .then((valid) => {
+            if (valid) done(null, user)
+            else done(new Error(errors.invalidLogin))
+          })
+          .catch(done)
+      } else {
+        done(new Error(errors.invalidLogin))
+      }
+    })
+    .catch(done)
+}
 
 /**
  * Build custom strategy
@@ -28,20 +50,6 @@ export const buildCustomStrategy = <User extends MinimalSession>(
     const nextRequest = req as unknown as NextRequest
     nextRequest
       .json()
-      .then((res) => {
-        findUser(res)
-          .then((user) => {
-            if (user && validatePassword(user, res)) {
-              done(null, user)
-            } else {
-              done(new Error(errors.invalidLogin))
-            }
-          })
-          .catch((err) => {
-            done(err)
-          })
-      })
-      .catch((err) => {
-        done(err)
-      })
+      .then((body) => findAndValidate(findUser, validatePassword, body, done))
+      .catch(done)
   })

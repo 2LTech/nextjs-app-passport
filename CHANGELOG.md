@@ -14,6 +14,6 @@
 
 - Security improve
 
-:warn: BREAKING CHANGES
+:warning: BREAKING CHANGES
 
-- removed `APILoginRoute`and `setLocalStrategy`, use `APICreateLoginRoute`instead
+- removed `APILoginRoute` and `setLocalStrategy`, use `APICreateLoginRoute` instead

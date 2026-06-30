@@ -12,7 +12,7 @@ const mockFindUser = jest.fn()
 const findUser = async (res: any) => mockFindUser(res)
 
 const mockValidatePassword = jest.fn()
-const validatePassword = (user: any, res: any) =>
+const validatePassword = async (user: any, res: any) =>
   mockValidatePassword(user, res)
 
 const mockJson = jest.fn()
@@ -44,6 +44,12 @@ describe('@/lib/strategy', () => {
   })
 
   test('buildCustomStrategy', () => {
+    const strategy = buildCustomStrategy(findUser, validatePassword)
+    strategy.authenticate(req, jest.fn)
+  })
+
+  test('buildCustomStrategy, empty user', () => {
+    mockFindUser.mockImplementation(() => undefined)
     const strategy = buildCustomStrategy(findUser, validatePassword)
     strategy.authenticate(req, jest.fn)
   })

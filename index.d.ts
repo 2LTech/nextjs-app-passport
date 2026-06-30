@@ -7,7 +7,7 @@ export type FindUser<User extends MinimalSession> = (
 export type ValidatePassword<User extends MinimalSession> = (
   user: User,
   body: unknown
-) => boolean
+) => Promise<boolean>
 
 export interface Session {
   id: string
@@ -21,8 +21,10 @@ export declare const APICreateLoginRoute: <User extends MinimalSession>(
   findUser: FindUser<User>,
   validatePassword: ValidatePassword<User>
 ) => (request: NextRequest) => Promise<Response>
-export declare const APILogoutRoute: () => Promise<Response>
-export declare const APIRefreshSessionRoute: () => Promise<Response>
+export declare const APILogoutRoute: (request: NextRequest) => Promise<Response>
+export declare const APIRefreshSessionRoute: (
+  request: NextRequest
+) => Promise<Response>
 export declare const getSession: (additionalData?: string[]) => Promise<Session>
 
 declare const NextjsAppPassport: {

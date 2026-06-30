@@ -3,7 +3,7 @@ const config = {
   silent: true,
   rootDir: '..',
   testEnvironment: 'node',
-  setupFiles: ['<rootDir>/.config/jest.setupe.js'],
+  setupFiles: ['<rootDir>/.config/jest.setup.js'],
   collectCoverage: true,
   collectCoverageFrom: ['<rootDir>/src/**/*'],
   transform: {

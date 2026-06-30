@@ -18,10 +18,12 @@ jobs:
         run: yarn install
       - name: Depcheck
         run: yarn depcheck
-      - name: Lint
+      - name: Prettier
         run: yarn prettier
       - name: Doc
         run: yarn doc
+      - name: Lint
+        run: yarn lint
       - name: Test
         run: yarn test
       - name: Build

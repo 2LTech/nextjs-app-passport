@@ -31,5 +31,6 @@ export const errors = {
   invalidAuthentication: 'Invalid username or password',
   invalidLogin: 'Invalid username and password combination',
   methodNotAllowed: 'Method not allowed',
-  invalidOrigin: 'Cross-site request rejected'
+  invalidOrigin: 'Cross-site request rejected',
+  invalidSession: 'Invalid session'
 }

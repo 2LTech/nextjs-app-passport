@@ -27,6 +27,11 @@ if [ -n "$activateBrowse" ]; then
 fi
 echo "    ok"
 
+# Prettier
+echo "[+] Lint..."
+yarn lint
+echo "    ok"
+
 # Test
 echo "[+] Test..."
 yarn test
