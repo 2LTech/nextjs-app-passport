@@ -117,4 +117,17 @@ describe('@/lib/login', () => {
     expect(mockSetSession).toHaveBeenCalledTimes(1)
     expect(mockSetSession).toHaveBeenCalledWith({ id: 'id' })
   })
+
+  test('settles only once when callback is invoked twice', async () => {
+    mockAuthenticate.mockImplementation(
+      (_strategy: string, _options: any, callback: (...args: any) => void) =>
+        () => {
+          callback(null, { id: 'id' })
+          callback(null, { id: 'id-2' })
+        }
+    )
+    await createLogin(findUser, validatePassword)(req)
+    expect(mockSetSession).toHaveBeenCalledTimes(1)
+    expect(mockSetSession).toHaveBeenCalledWith({ id: 'id' })
+  })
 })
