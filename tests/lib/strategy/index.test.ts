@@ -1,5 +1,3 @@
-import { NextRequest } from 'next/server'
-
 import { buildCustomStrategy, strategyName } from '@/lib/strategy'
 
 jest.mock('@/defs', () => ({
@@ -18,7 +16,7 @@ const validatePassword = async (user: any, res: any) =>
 const mockJson = jest.fn()
 const req = {
   json: async () => mockJson()
-} as NextRequest
+} as any
 
 jest.mock('passport-custom', () => ({
   Strategy: (authenticate: any) => {

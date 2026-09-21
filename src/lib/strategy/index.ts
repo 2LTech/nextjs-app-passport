@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import Custom from 'passport-custom'
+import type { VerifiedCallback } from 'passport-custom'
 
 import { errors } from '@/defs'
 
@@ -19,7 +20,7 @@ const findAndValidate = <User extends MinimalSession>(
   findUser: FindUser<User>,
   validatePassword: ValidatePassword<User>,
   body: unknown,
-  done: Custom.VerifiedCallback
+  done: VerifiedCallback
 ) => {
   findUser(body)
     .then((user) => {
@@ -45,7 +46,7 @@ const findAndValidate = <User extends MinimalSession>(
 export const buildCustomStrategy = <User extends MinimalSession>(
   findUser: FindUser<User>,
   validatePassword: ValidatePassword<User>
-): Custom.Strategy =>
+): Custom =>
   new Custom.Strategy((req, done) => {
     const nextRequest = req as unknown as NextRequest
     nextRequest
